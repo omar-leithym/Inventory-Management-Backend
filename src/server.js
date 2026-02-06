@@ -16,6 +16,8 @@ app.use(cors());
 
 // Routes
 app.use("/api/users", userRoutes);
+app.use("/api/menu-items", require("./routes/menuItemRoutes"));
+app.use("/api/addons", require("./routes/addonRoutes"));
 
 // Error Middleware
 app.use(errorHandler);
