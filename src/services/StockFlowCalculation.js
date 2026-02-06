@@ -81,8 +81,11 @@ class FreshFlowStockCalculator {
 
     for (const item of menuItems) {
       // Find current stock for this item
-      const stockEntry = currentInventory.find(inv => inv.menuItemId === item.id);
-      const currentStockLevel = stockEntry ? stockEntry.units : 0;
+      // Stock model uses 'item' to reference the product
+      const stockEntry = currentInventory.find(inv =>
+        inv.item && inv.item.toString() === item.id.toString()
+      );
+      const currentStockLevel = stockEntry ? stockEntry.quantity : 0;
 
       // Get Prediction from AI (Placeholder)
       const predictedDemand = await this.fetchAIPrediction(item.id, days);

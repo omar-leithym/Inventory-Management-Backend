@@ -1,4 +1,4 @@
-const FreshFlowStockCalculator = require('./src/services/StockFlowCalculation');
+const FreshFlowStockCalculator = require('../src/services/StockFlowCalculation');
 
 async function testStockCalculation() {
     const calculator = new FreshFlowStockCalculator();
