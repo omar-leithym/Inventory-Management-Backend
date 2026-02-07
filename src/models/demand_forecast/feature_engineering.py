@@ -320,7 +320,19 @@ class FeatureEngineer:
         
         features['place_total_demand'] = global_stats['avg_place_demand']
         features['place_unique_items'] = 5  # Default estimate
+        features['place_total_demand'] = global_stats['avg_place_demand']
+        features['place_unique_items'] = 5  # Default estimate
         features['place_demand_rolling_mean_7'] = global_stats['avg_place_demand']
-        features['item_share_of_place'] = global_stats['avg_demand'] / global_stats['avg_place_demand']
+        features['item_share_of_place'] = global_stats['avg_demand'] / (global_stats['avg_place_demand'] + 1e-6)
+        
+        # Add missing Item/Menu/Price features
+        avg_price = global_stats.get('avg_price', 50.0)
+        features['price'] = avg_price
+        features['item_base_price'] = avg_price
+        features['menu_price'] = avg_price
+        features['total_amount'] = global_stats['avg_demand'] * avg_price
+        features['menu_purchases'] = 0
+        features['menu_status'] = 0  # Default encoded value for unknown status
+        features['target'] = 0 # Dummy target
         
         return pd.DataFrame([features])
