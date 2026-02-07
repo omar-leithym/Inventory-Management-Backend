@@ -6,11 +6,11 @@ const Stock = require("../models/stockModel");
 // @route   POST /api/restock
 // @access  Private
 const createRestock = asyncHandler(async (req, res) => {
-    const { menuItemId, addonIds, quantity, price } = req.body;
+    const { menuItemId, addonIds, quantity, pricePerUnit } = req.body;
 
-    if (!menuItemId || !price) {
+    if (!menuItemId || !pricePerUnit) {
         res.status(400);
-        throw new Error('Please include menu item and price');
+        throw new Error('Please include menu item and price per unit');
     }
 
     const restock = await Restock.create({
@@ -18,7 +18,7 @@ const createRestock = asyncHandler(async (req, res) => {
         menuItem: menuItemId,
         addons: addonIds || [],
         quantity: quantity || 1,
-        pricePerUnit: price
+        pricePerUnit
     });
 
     // Auto-add stock for MenuItem
