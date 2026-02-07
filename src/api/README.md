@@ -10,7 +10,14 @@ Get a demand forecast for a specific item at a specific place and date.
 
 - **URL**: `/api/demand/predict`
 - **Method**: `POST`
-- **Auth**: None (for now)
+
+### Usage Example
+
+```bash
+curl -X POST http://localhost:5001/api/demand/predict \
+     -H "Content-Type: application/json" \
+     -d '{"item_id": 123, "place_id": 456, "date": "2024-03-01"}'
+```
 
 #### Request Body
 ```json

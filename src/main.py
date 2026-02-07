@@ -15,4 +15,4 @@ from src.api.routes import app
 if __name__ == "__main__":
     print(f"Starting Demand Forecast API server...")
     print(f"Project root: {project_root}")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)
