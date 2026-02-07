@@ -32,6 +32,9 @@ const createSale = asyncHandler(async (req, res) => {
     if (menuItemStock) {
         menuItemStock.quantity -= (quantity || 1);
         await menuItemStock.save();
+        console.log(`✅ Deducted ${quantity || 1} from MenuItem ${menuItemId}. New quantity: ${menuItemStock.quantity}`);
+    } else {
+        console.log(`⚠️  No stock entry found for MenuItem ${menuItemId}`);
     }
 
     // Auto-deduct stock for each Addon
@@ -46,6 +49,9 @@ const createSale = asyncHandler(async (req, res) => {
             if (addonStock) {
                 addonStock.quantity -= (quantity || 1);
                 await addonStock.save();
+                console.log(`✅ Deducted ${quantity || 1} from Addon ${addonId}. New quantity: ${addonStock.quantity}`);
+            } else {
+                console.log(`⚠️  No stock entry found for Addon ${addonId}`);
             }
         }
     }

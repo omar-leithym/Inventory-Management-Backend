@@ -7,9 +7,8 @@ const stockSchema = mongoose.Schema({
         ref: 'User'
     },
     item: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        refPath: 'itemType'
+        type: Number,  // Custom integer IDs (e.g., 59911) instead of ObjectId
+        required: true
     },
     itemType: {
         type: String,

@@ -7,9 +7,8 @@ const saleSchema = mongoose.Schema({
         ref: 'User'
     },
     menuItem: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: [true, "Please add a menu item"],
-        ref: 'MenuItem'
+        type: Number,  // Custom integer ID instead of ObjectId
+        required: [true, "Please add a menu item"]
     },
     addons: [{
         type: mongoose.Schema.Types.ObjectId,
