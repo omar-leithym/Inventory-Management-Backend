@@ -1,14 +1,23 @@
 /**
- * Alert Generator Service
- * Generates actionable stock alerts based on FreshFlowStockCalculator results
+ * File: AlertGenerator.js
+ * Description: Service for generating actionable stock alerts based on inventory calculations.
+ * Dependencies: None
+ * 
+ * This service analyzes stock calculation results and generates categorized alerts
+ * to help users maintain optimal inventory levels and prevent stockouts.
  */
+
 class AlertGenerator {
 
   /**
-   * Generate alerts from stock calculation results
+   * Generate alerts from stock calculation results.
+   * 
+   * Analyzes each item in the stock results and creates alerts based on
+   * current stock levels relative to target levels.
+   * 
    * @param {Array} stockResults - Output from FreshFlowStockCalculator
-   * @param {number} lowStockThreshold - Custom percentage threshold for critically low stock
-   * @returns {Array} List of alerts
+   * @param {number} lowStockThreshold - Custom percentage threshold for critically low stock (default: 20)
+   * @returns {Array} List of alerts with severity levels and recommended actions
    */
   generateStockAlerts(stockResults, lowStockThreshold = 20) {
     const alerts = [];
@@ -24,9 +33,14 @@ class AlertGenerator {
   }
 
   /**
-   * Evaluate a single item for alerts
+   * Evaluate a single item for alert generation.
+   * 
+   * Determines if an item requires attention based on stock levels and generates
+   * appropriate alerts with severity classification (CRITICAL, WARNING, INFO).
+   * 
    * @param {Object} itemResult - Single item result from calculator
    * @param {number} lowStockThreshold - Custom percentage threshold
+   * @returns {Object|null} Alert object if action needed, null otherwise
    */
   evaluateItem(itemResult, lowStockThreshold) {
     const {
@@ -37,10 +51,10 @@ class AlertGenerator {
       itemType
     } = itemResult;
 
-    // Skip trivial items (very low demand) unless completely out
+    // Skip trivial items with very low demand unless completely out
     if (aimStockLevel < 2 && currentStock > 0) return null;
 
-    // 1. CRITICAL: Out of Stock
+    // CRITICAL: Out of Stock
     if (currentStock <= 0) {
       return {
         menuItemId,
@@ -52,12 +66,12 @@ class AlertGenerator {
       };
     }
 
-    // 2. WARNING: Below Safety Level (Replenishment Needed)
+    // WARNING: Below Safety Level (Replenishment Needed)
     if (currentStock < aimStockLevel) {
-      // Calculate how low we are (percentage of target)
+      // Calculate stock health as percentage of target
       const stockHealth = (currentStock / aimStockLevel) * 100;
 
-      // If stock is critically low (below user threshold) -> High Importance
+      // If stock is critically low (below user threshold)
       if (stockHealth < lowStockThreshold) {
         return {
           menuItemId,
@@ -79,7 +93,7 @@ class AlertGenerator {
       };
     }
 
-    // 3. INFO: Overstocked
+    // INFO: Overstocked
     if (currentStock > aimStockLevel * 2) {
       const excess = currentStock - aimStockLevel;
       return {
@@ -96,8 +110,13 @@ class AlertGenerator {
   }
 
   /**
-   * Summarize alerts for dashboard
-   * @param {Array} alerts 
+   * Generate dashboard summary from alerts.
+   * 
+   * Aggregates alerts by severity level to provide a quick overview
+   * for dashboard display.
+   * 
+   * @param {Array} alerts - Array of generated alerts
+   * @returns {Object} Summary containing counts by severity and full alert list
    */
   getDashboardSummary(alerts) {
     return {

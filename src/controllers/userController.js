@@ -1,3 +1,12 @@
+/**
+ * File: userController.js
+ * Description: Controller for user authentication, profile management, and settings.
+ * Dependencies: express-async-handler, userModel, jwt, bcrypt, validator, libphonenumber-js
+ * 
+ * This controller manages user registration, login, profile updates, and
+ * configurable settings for inventory management preferences.
+ */
+
 const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
@@ -6,12 +15,27 @@ const validator = require("validator");
 const { parsePhoneNumberFromString } = require("libphonenumber-js");
 const passwordSchema = require("../utils/validation");
 
+/**
+ * Generate JWT token for user authentication.
+ * 
+ * @param {string} id - User ID
+ * @returns {string} JWT token valid for 30 days
+ */
 const genToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: "30d"
     });
 };
 
+/**
+ * Register a new user account.
+ * 
+ * Validates user input, checks for existing accounts, and creates
+ * a new user with hashed password.
+ * 
+ * @route   POST /api/users/register
+ * @access  Public
+ */
 const registerUser = asyncHandler(async (req, res) => {
     const { email, password, phone, firstName, lastName } = req.body;
 
@@ -70,6 +94,14 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 });
 
+/**
+ * Authenticate user and return token.
+ * 
+ * Verifies credentials and returns JWT for subsequent requests.
+ * 
+ * @route   POST /api/users/login
+ * @access  Public
+ */
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
@@ -95,6 +127,14 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 });
 
+/**
+ * Get authenticated user profile.
+ * 
+ * Returns user details for the currently logged-in user.
+ * 
+ * @route   GET /api/users/getuser
+ * @access  Private
+ */
 const getUser = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id);
     if (user) {
@@ -111,34 +151,26 @@ const getUser = asyncHandler(async (req, res) => {
     }
 });
 
+/**
+ * Update user profile information.
+ * 
+ * Allows users to update their email, first name, and last name.
+ * Validates email uniqueness before updating.
+ * 
+ * @route   PATCH /api/users/updateuser/:id
+ * @access  Private
+ */
 const updateUser = asyncHandler(async (req, res) => {
     const { email, firstName, lastName } = req.body;
 
-    // Check if user exists (already checked by protect middleware for req.user usually, but here we use req.params.id? Snippet used req.params.id. Consistency with snippet.)
-    // However, usually users update themselves. 
-    // The snippet: User.findById(req.params.id)
-    // I will stick to the snippet logic but ensure safety.
-
-    // Note: The snippet had "const user = await User.findById(req.params.id)". 
-    // But typically this route should be protected and use req.user.id if it's "update profile". 
-    // If it's admin updating user, it takes ID.
-    // The snippet used protect middleware on other routes, but didn't show the route definition for updateUser explicitly with protect.
-    // I will assume it is "update current user" or "update user by id".
-    // Snippet had: "const user = await User.findById(req.params.id)"
-    // I'll assume usage of ID in params.
-
-    const user = await User.findById(req.params.id || req.user.id); // Fallback to current user if no param? Or strict? 
-    // Snippet implies specific ID. I will use req.params.id as per snippet, but if it's protected, usually we check if req.user.id === req.params.id or admin.
-    // For now I will copy the logic close to snippet. "req.params.id" is key.
+    const user = await User.findById(req.params.id || req.user.id);
 
     if (!user) {
         res.status(404);
         throw new Error("User not found");
     }
 
-    // Check uniqueness conflicts if updating email
-
-
+    // Check email uniqueness if updating email
     if (email && email !== user.email) {
         const emailExists = await User.findOne({ email });
         if (emailExists) {
@@ -166,6 +198,14 @@ const updateUser = asyncHandler(async (req, res) => {
     });
 });
 
+/**
+ * Search for users by email or phone.
+ * 
+ * Performs case-insensitive search and excludes current user from results.
+ * 
+ * @route   GET /api/users/search
+ * @access  Private
+ */
 const searchUsers = asyncHandler(async (req, res) => {
     const { query } = req.query;
 
@@ -174,21 +214,27 @@ const searchUsers = asyncHandler(async (req, res) => {
         throw new Error('Search query is required');
     }
 
-    // Search by email, or phone
+    // Search by email or phone
     const users = await User.find({
         $or: [
             { email: { $regex: query, $options: 'i' } },
             { phone: { $regex: query, $options: 'i' } }
         ],
-        _id: { $ne: req.user.id } // Exclude the current user
+        _id: { $ne: req.user.id }
     }).select('firstName lastName _id email');
 
     res.status(200).json(users);
 });
 
-// @desc    Update user settings (e.g., demand window)
-// @route   PUT /api/users/settings
-// @access  Private
+/**
+ * Update user inventory management settings.
+ * 
+ * Allows users to configure demand window, lead time, safety stock buffer,
+ * low stock threshold, and budget limits for personalized recommendations.
+ * 
+ * @route   PUT /api/users/settings
+ * @access  Private
+ */
 const updateSettings = asyncHandler(async (req, res) => {
     const {
         demandWindow,
@@ -213,19 +259,24 @@ const updateSettings = asyncHandler(async (req, res) => {
     if (lowStockThreshold !== undefined) user.settings.lowStockThreshold = lowStockThreshold;
     if (budgetLimit !== undefined) {
         user.settings.budgetLimit = budgetLimit;
-        user.budget = budgetLimit; // Sync with top-level budget field
+        user.budget = budgetLimit;
     }
 
-    // Explicitly mark modified if needed for nested updates
+    // Mark nested field as modified for Mongoose
     user.markModified('settings');
     const updatedUser = await user.save();
 
     res.status(200).json(updatedUser.settings);
 });
 
-// @desc    Get user settings
-// @route   GET /api/users/settings
-// @access  Private
+/**
+ * Get user inventory management settings.
+ * 
+ * Returns current configuration for demand forecasting and stock management.
+ * 
+ * @route   GET /api/users/settings
+ * @access  Private
+ */
 const getSettings = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id);
 

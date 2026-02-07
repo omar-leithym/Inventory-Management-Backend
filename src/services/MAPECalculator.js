@@ -1,22 +1,34 @@
+/**
+ * File: MAPECalculator.js
+ * Description: Service for calculating forecast accuracy using MAPE (Mean Absolute Percentage Error).
+ * Dependencies: mongoose, ForecastModel, saleModel
+ * 
+ * This service evaluates the accuracy of demand forecasts by comparing predicted
+ * quantities against actual sales data over specified time periods.
+ */
+
 const mongoose = require('mongoose');
 const Forecast = require('../models/ForecastModel');
 const Sale = require('../models/saleModel');
 
-/**
- * Service to calculate Forecast Accuracy using MAPE
- * Formula: Mean Absolute Percentage Error
- */
 class MAPECalculator {
 
     /**
-     * Calculate MAPE for a specific item over a date range
+     * Calculate MAPE for a specific item over a date range.
+     * 
+     * Formula: MAPE = (1/n) * Σ |Actual - Predicted| / Actual
+     * 
+     * This method fetches forecasts and actual sales, then computes the mean
+     * absolute percentage error to measure prediction accuracy.
+     * 
      * @param {string} itemId - Menu Item ID
      * @param {string} userId - User ID
-     * @param {Date} startDate 
-     * @param {Date} endDate 
+     * @param {Date} startDate - Start of analysis period
+     * @param {Date} endDate - End of analysis period
+     * @returns {Object} MAPE result with accuracy metrics
      */
     async calculateItemMAPE(itemId, userId, startDate, endDate) {
-        // 1. Fetch Forecasts
+        // Fetch Forecasts
         const forecasts = await Forecast.find({
             user: userId,
             menuItem: itemId,
@@ -25,7 +37,7 @@ class MAPECalculator {
 
         if (!forecasts.length) return { mape: 0, message: "No forecasts found" };
 
-        // 2. Fetch Actual Sales (Aggregated by Day)
+        // Fetch Actual Sales (Aggregated by Day)
         const sales = await Sale.aggregate([
             {
                 $match: {
@@ -42,13 +54,13 @@ class MAPECalculator {
             }
         ]);
 
-        // Map sales to a dictionary for easy lookup: { "2023-10-27": 15 }
+        // Map sales to dictionary for easy lookup: { "2023-10-27": 15 }
         const salesMap = {};
         sales.forEach(s => {
             salesMap[s._id] = s.totalQuantity;
         });
 
-        // 3. Calculate Error
+        // Calculate Error
         let totalErrorPercent = 0;
         let count = 0;
 
@@ -64,17 +76,13 @@ class MAPECalculator {
                     count++;
                     continue;
                 }
-                // If predicted > 0 but actual 0, strict MAPE is undefined (division by 0).
-                // Common practice: use a small number or cap error at 100%? 
-                // Or skip? For simplicity, we skip strictly undefined days or assume 100% error.
-                // Let's count it as 100% error (1.0) if we predicted something but sold nothing.
+                // If predicted > 0 but actual 0, count as 100% error
                 else {
-                    totalErrorPercent += 1; // 100% error
+                    totalErrorPercent += 1;
                     count++;
                 }
             } else {
-                // Standard MAPE Calculation
-                // | (Actual - Predicted) / Actual |
+                // Standard MAPE Calculation: | (Actual - Predicted) / Actual |
                 const error = Math.abs((actual - predicted) / actual);
                 totalErrorPercent += error;
                 count++;
@@ -83,7 +91,7 @@ class MAPECalculator {
 
         if (count === 0) return { mape: 0, count: 0 };
 
-        // Return raw error ratio (e.g., 0.1 for 10%)
+        // Return error ratio (e.g., 0.1 for 10%)
         return {
             itemId,
             mape: parseFloat((totalErrorPercent / count).toFixed(4)),

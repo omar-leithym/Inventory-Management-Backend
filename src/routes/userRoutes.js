@@ -1,3 +1,12 @@
+/**
+ * File: userRoutes.js
+ * Description: Route definitions for user authentication and profile management endpoints.
+ * Dependencies: express, userController, authMiddleware
+ * 
+ * Defines HTTP routes for user registration, login, profile updates, search,
+ * and settings management.
+ */
+
 const express = require("express");
 const router = express.Router();
 const {

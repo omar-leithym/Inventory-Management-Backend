@@ -1,66 +1,81 @@
 /**
- * FreshFlow Stock Calculator Service
- * Converts AI-predicted demand into required stock levels based on user-defined formulas.
+ * File: StockFlowCalculation.js
+ * Description: Service for converting AI-predicted demand into actionable stock requirements.
+ * Dependencies: None (axios for future AI service integration)
+ * 
+ * This service calculates optimal stock levels based on demand predictions,
+ * lead times, and safety buffers. It implements the formula:
+ * Target Stock = (Lead Time Demand + Cycle Demand) × Buffer
  */
+
 class FreshFlowStockCalculator {
 
   /**
-   * PLACEHOLDER: Simulate fetching prediction from AI Model API
-   * In production, this would be an HTTP request to the Python/Flask AI service.
-   * @param {string} itemId 
-   * @param {number} days 
+   * Fetch AI prediction for item demand.
+   * 
+   * NOTE: This is a placeholder for AI model integration. In production,
+   * this would make an HTTP request to the Python/Flask AI service.
+   * 
+   * @param {string} itemId - Menu Item ID
+   * @param {number} days - Prediction period in days
    * @returns {Promise<number>} Predicted total demand for the period
    */
   async fetchAIPrediction(itemId, days) {
-    // TODO: Connect to actual AI Model API here
+    // TODO: Connect to actual AI Model API
     // const response = await axios.post('http://ai-service/predict', { itemId, days });
     // return response.data.prediction;
 
-    // Returning dummy data for now that scales with the requested days
-    // Assumption: Sales rate is approx 10 items/day
+    // Dummy data: assumes sales rate of approx 10 items/day
     return 10 * days;
   }
 
   /**
-   * Calculate stock requirements based on the specific formula:
-   * Target = (LeadTimeDemand + CycleDemand) * Buffer
+   * Calculate stock requirements based on demand prediction.
+   * 
+   * Uses the formula:
+   * Target = (Lead Time Demand + Cycle Demand) × Buffer
+   * 
+   * Where:
+   * - Lead Time Demand: Items sold while waiting for stock delivery
+   * - Cycle Demand: Predicted demand for the planning period
+   * - Buffer: Safety multiplier to prevent stockouts
    * 
    * @param {string} menuItemId - Menu item ID
    * @param {number} predictedDemand - Total predicted demand for the input days
    * @param {number} currentStock - Current inventory level
-   * @param {number} days - Prediction period in days (default 7)
-   * @param {number} leadTime - Days to restock (default 2)
-   * @param {number} buffer - Safety multiplier (default 1.2)
-   * @returns {Object} Stock calculation details
+   * @param {number} days - Prediction period in days (default: 7)
+   * @param {number} leadTime - Days to restock (default: 2)
+   * @param {number} buffer - Safety multiplier (default: 1.2)
+   * @returns {Object} Detailed stock calculation results
    */
   calculateStockNeeds(menuItemId, predictedDemand, currentStock, days = 7, leadTime = 2, buffer = 1.2) {
-    // 1. Calculate Daily Demand Rate
+    // Calculate Daily Demand Rate
     const dailyRate = predictedDemand / days;
 
-    // 2. Calculate Lead Time Demand (Sold while waiting for stock)
+    // Calculate Lead Time Demand (Sold while waiting for stock)
     const leadTimeDemand = dailyRate * leadTime;
 
-    // 3. Calculate Cycle Demand (Demand for the planning period)
+    // Calculate Cycle Demand (Demand for the planning period)
     const cycleDemand = predictedDemand;
 
-    // 4. Calculate Total Base Demand
+    // Calculate Total Base Demand
     const baseDemand = leadTimeDemand + cycleDemand;
 
-    // 5. Apply Buffer to get Target Stock Level (Aim Number)
+    // Apply Buffer to get Target Stock Level (Aim Number)
     const aimStockLevel = Math.ceil(baseDemand * buffer);
 
-    // 6. Calculate Replenishment Needed (Calculated Stock)
-    // If current stock is higher than aim, we don't need to order (0)
+    // Calculate Replenishment Needed (Calculated Stock)
+    // If current stock exceeds aim, no order needed
     const replenishmentNeeded = Math.max(0, aimStockLevel - currentStock);
 
     return {
       menuItemId,
       inputDays: days,
-      predictedDemand, // D_total
-      dailyRate,       // R
-      aimStockLevel,   // Target Stock (The "Aim number")
-      currentStock,    // Current Stock
-      calculatedStock: replenishmentNeeded, // Stock to order/add
+      predictedDemand,
+      dailyRate,
+      aimStockLevel,
+      currentStock,
+      calculatedStock: replenishmentNeeded,
       details: {
         leadTimeDemand,
         cycleDemand,
@@ -71,13 +86,17 @@ class FreshFlowStockCalculator {
   }
 
   /**
-   * Process multiple items
-   * Fetches predictions internally via the placeholder
-   * @param {Array} menuItems - List of items
+   * Process stock calculations for multiple items.
+   * 
+   * Fetches AI predictions for each item and calculates their stock requirements
+   * based on user-defined settings.
+   * 
+   * @param {Array} menuItems - List of catalog items
    * @param {Array} currentInventory - List of stock entries
-   * @param {number} days - Prediction horizon
-   * @param {number} leadTime - Custom lead time from settings
-   * @param {number} bufferPercentage - Custom safety stock buffer percentage (e.g., 20)
+   * @param {number} days - Prediction horizon (default: 7)
+   * @param {number} leadTime - Custom lead time from settings (default: 2)
+   * @param {number} bufferPercentage - Safety stock buffer percentage (default: 20)
+   * @returns {Promise<Array>} Stock calculation results for all items
    */
   async calculateAllStockNeeds(menuItems, currentInventory, days = 7, leadTime = 2, bufferPercentage = 20) {
     const results = [];
@@ -85,7 +104,6 @@ class FreshFlowStockCalculator {
 
     for (const item of menuItems) {
       // Find current stock for this item
-      // Stock model uses 'item' to reference the product
       const stockEntry = currentInventory.find(inv =>
         inv.item && inv.item.toString() === item.id.toString()
       );

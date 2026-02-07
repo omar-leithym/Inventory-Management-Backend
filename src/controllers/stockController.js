@@ -1,12 +1,27 @@
+/**
+ * File: stockController.js
+ * Description: Controller for inventory management and stock recommendations.
+ * Dependencies: express-async-handler, mongoose, stockModel, menuItemModel, addonModel
+ * 
+ * This controller handles stock CRUD operations and generates AI-powered
+ * stock recommendations based on demand predictions.
+ */
+
 const asyncHandler = require("express-async-handler");
 const mongoose = require("mongoose");
 const Stock = require("../models/stockModel");
 const MenuItem = require("../models/menuItemModel");
 const Addon = require("../models/addonModel");
 
-// @desc    Add item to stock
-// @route   POST /api/stock
-// @access  Private
+/**
+ * Add item to stock inventory.
+ * 
+ * Creates a new stock entry or updates existing quantity for a menu item or addon.
+ * Validates item existence before adding to inventory.
+ * 
+ * @route   POST /api/stock
+ * @access  Private
+ */
 const addStock = asyncHandler(async (req, res) => {
     const { itemId, itemType, quantity } = req.body;
 
@@ -37,7 +52,7 @@ const addStock = asyncHandler(async (req, res) => {
     });
 
     if (stockItem) {
-        // Update quantity
+        // Update existing quantity
         stockItem.quantity += parseInt(quantity || 0);
         await stockItem.save();
         res.status(200).json(stockItem);
@@ -53,19 +68,30 @@ const addStock = asyncHandler(async (req, res) => {
     }
 });
 
-// @desc    Get user stock
-// @route   GET /api/stock
-// @access  Private
+/**
+ * Get all stock items for authenticated user.
+ * 
+ * Returns complete inventory with populated item details.
+ * 
+ * @route   GET /api/stock
+ * @access  Private
+ */
 const getStock = asyncHandler(async (req, res) => {
     const stock = await Stock.find({ user: req.user.id })
-        .populate('item') // This works because of refPath in model
+        .populate('item')
         .sort('-createdAt');
     res.status(200).json(stock);
 });
 
-// @desc    Update stock quantity
-// @route   PUT /api/stock/:id
-// @access  Private
+/**
+ * Update stock quantity for an item.
+ * 
+ * Allows manual adjustment of inventory levels. Verifies user authorization
+ * before allowing updates.
+ * 
+ * @route   PUT /api/stock/:id
+ * @access  Private
+ */
 const updateStock = asyncHandler(async (req, res) => {
     const stock = await Stock.findById(req.params.id);
 
@@ -74,13 +100,12 @@ const updateStock = asyncHandler(async (req, res) => {
         throw new Error('Stock item not found');
     }
 
-    // Check for user
     if (!req.user) {
         res.status(401);
         throw new Error('User not found');
     }
 
-    // Make sure the logged in user matches the stock user
+    // Verify user owns this stock entry
     if (stock.user.toString() !== req.user.id) {
         res.status(401);
         throw new Error('User not authorized');
@@ -94,9 +119,14 @@ const updateStock = asyncHandler(async (req, res) => {
     res.status(200).json(stock);
 });
 
-// @desc    Delete stock item
-// @route   DELETE /api/stock/:id
-// @access  Private
+/**
+ * Delete a stock item from inventory.
+ * 
+ * Removes stock entry after verifying user authorization.
+ * 
+ * @route   DELETE /api/stock/:id
+ * @access  Private
+ */
 const deleteStock = asyncHandler(async (req, res) => {
     const stock = await Stock.findById(req.params.id);
 
@@ -105,13 +135,12 @@ const deleteStock = asyncHandler(async (req, res) => {
         throw new Error('Stock item not found');
     }
 
-    // Check for user
     if (!req.user) {
         res.status(401);
         throw new Error('User not found');
     }
 
-    // Make sure the logged in user matches the stock user
+    // Verify user owns this stock entry
     if (stock.user.toString() !== req.user.id) {
         res.status(401);
         throw new Error('User not authorized');
@@ -121,24 +150,32 @@ const deleteStock = asyncHandler(async (req, res) => {
 
     res.status(200).json({ id: req.params.id });
 });
-// @desc    Get stock recommendations based on AI prediction
-// @route   GET /api/stock/recommendations
-// @access  Private
+
+/**
+ * Get AI-powered stock recommendations.
+ * 
+ * Analyzes current inventory levels, fetches demand predictions, and generates
+ * actionable recommendations for stock replenishment. Uses user-defined settings
+ * for lead time, safety buffers, and alert thresholds.
+ * 
+ * @route   GET /api/stock/recommendations
+ * @access  Private
+ */
 const getStockRecommendations = asyncHandler(async (req, res) => {
-    // 1. Fetch all catalog items (MenuItems + Addons)
+    // Fetch all catalog items (MenuItems + Addons)
     const menuItems = await MenuItem.find({});
     const addons = await Addon.find({});
 
-    // Normalize them into a single list with 'id' property
+    // Normalize into a single list with 'id' property
     const allCatalogItems = [
         ...menuItems.map(item => ({ id: item._id, name: item.title || item.name, type: 'MenuItem' })),
         ...addons.map(item => ({ id: item._id, name: item.name, type: 'Addon' }))
     ];
 
-    // 2. Fetch current user's stock
+    // Fetch current user's stock
     const userStock = await Stock.find({ user: req.user.id });
 
-    // 2.2 Fetch User Settings
+    // Fetch User Settings
     const user = await require("../models/userModel").findById(req.user.id);
     const settings = user.settings || {};
 
@@ -148,12 +185,11 @@ const getStockRecommendations = asyncHandler(async (req, res) => {
     const bufferPercentage = settings.safetyStockBuffer !== undefined ? settings.safetyStockBuffer : 20;
     const lowStockThreshold = settings.lowStockThreshold !== undefined ? settings.lowStockThreshold : 20;
 
-    // 3. Instantiate Calculator
+    // Instantiate Calculator
     const FreshFlowStockCalculator = require('../services/StockFlowCalculation');
     const calculator = new FreshFlowStockCalculator();
 
-    // 4. Calculate Needs
-    // Use the user's preferred settings
+    // Calculate Needs using user's preferred settings
     const recommendations = await calculator.calculateAllStockNeeds(
         allCatalogItems,
         userStock,
@@ -162,8 +198,7 @@ const getStockRecommendations = asyncHandler(async (req, res) => {
         bufferPercentage
     );
 
-
-    // 5. Generate Alerts
+    // Generate Alerts
     const AlertGenerator = require('../services/AlertGenerator');
     const alertGen = new AlertGenerator();
     const alerts = alertGen.generateStockAlerts(recommendations, lowStockThreshold);
@@ -182,9 +217,15 @@ const getStockRecommendations = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Get stock item by ID
-// @route   GET /api/stock/:id
-// @access  Private
+/**
+ * Get a specific stock item by ID.
+ * 
+ * Retrieves stock details with populated item information.
+ * Verifies user authorization.
+ * 
+ * @route   GET /api/stock/:id
+ * @access  Private
+ */
 const getStockById = asyncHandler(async (req, res) => {
     const stock = await Stock.findById(req.params.id)
         .populate('item');
@@ -194,13 +235,12 @@ const getStockById = asyncHandler(async (req, res) => {
         throw new Error('Stock item not found');
     }
 
-    // Check for user
     if (!req.user) {
         res.status(401);
         throw new Error('User not found');
     }
 
-    // Make sure the logged in user matches the stock user
+    // Verify user owns this stock entry
     if (stock.user.toString() !== req.user.id) {
         res.status(401);
         throw new Error('User not authorized');

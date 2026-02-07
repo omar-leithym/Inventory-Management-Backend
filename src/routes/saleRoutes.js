@@ -1,3 +1,11 @@
+/**
+ * File: saleRoutes.js
+ * Description: Route definitions for sales management endpoints.
+ * Dependencies: express, saleController, authMiddleware
+ * 
+ * Defines HTTP routes for creating and retrieving sales transactions.
+ */
+
 const express = require('express');
 const router = express.Router();
 const { createSale, getSales, getSaleById } = require('../controllers/saleController');
