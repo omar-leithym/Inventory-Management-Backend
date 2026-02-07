@@ -7,7 +7,7 @@ const addonSchema = mongoose.Schema({
         ref: 'User'
     },
     menuItem: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Number,
         required: [true, "Please add a menu item"],
         ref: 'MenuItem'
     },
