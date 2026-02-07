@@ -85,7 +85,7 @@ cd Frontend && npm run dev
 ```bash
 # Health checks
 curl http://localhost:5000/api/health    # Node.js API
-curl http://localhost:8000/health        # Discount API
+curl http://localhost:8000/health        # Promotion Prediction API
 curl http://localhost:5001/api/health    # Demand Forecast API
 ```
 
