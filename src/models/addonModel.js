@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const addonSchema = mongoose.Schema({
+    _id: Number,
     title: {
         type: String,
         required: [true, "Please add a title"],

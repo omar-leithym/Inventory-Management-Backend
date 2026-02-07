@@ -5,3 +5,7 @@ node_modules/
 # Ignore data folder content but keep folder
 data/*
 !data/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]

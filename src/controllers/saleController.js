@@ -35,7 +35,36 @@ const getSales = asyncHandler(async (req, res) => {
     res.status(200).json(sales);
 });
 
+// @desc    Get sale by ID
+// @route   GET /api/sales/:id
+// @access  Private
+const getSaleById = asyncHandler(async (req, res) => {
+    const sale = await Sale.findById(req.params.id)
+        .populate('menuItem')
+        .populate('addons');
+
+    if (!sale) {
+        res.status(404);
+        throw new Error('Sale not found');
+    }
+
+    // Check for user
+    if (!req.user) {
+        res.status(401);
+        throw new Error('User not found');
+    }
+
+    // Make sure the logged in user matches the sale user
+    if (sale.user.toString() !== req.user.id) {
+        res.status(401);
+        throw new Error('User not authorized');
+    }
+
+    res.status(200).json(sale);
+});
+
 module.exports = {
     createSale,
-    getSales
+    getSales,
+    getSaleById
 };

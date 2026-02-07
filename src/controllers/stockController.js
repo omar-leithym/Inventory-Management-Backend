@@ -157,10 +157,39 @@ const getStockRecommendations = asyncHandler(async (req, res) => {
         summary
     });
 });
+
+// @desc    Get stock item by ID
+// @route   GET /api/stock/:id
+// @access  Private
+const getStockById = asyncHandler(async (req, res) => {
+    const stock = await Stock.findById(req.params.id)
+        .populate('item');
+
+    if (!stock) {
+        res.status(404);
+        throw new Error('Stock item not found');
+    }
+
+    // Check for user
+    if (!req.user) {
+        res.status(401);
+        throw new Error('User not found');
+    }
+
+    // Make sure the logged in user matches the stock user
+    if (stock.user.toString() !== req.user.id) {
+        res.status(401);
+        throw new Error('User not authorized');
+    }
+
+    res.status(200).json(stock);
+});
+
 module.exports = {
     addStock,
     getStock,
     updateStock,
     deleteStock,
-    getStockRecommendations
+    getStockRecommendations,
+    getStockById
 };
