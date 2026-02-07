@@ -47,7 +47,7 @@ class DemandForecastModel:
         model_type (str): Type of model ('xgboost', 'lightgbm', 'random_forest', 'ensemble')
     """
     
-    def __init__(self, model_type: str = 'ensemble', data_path: str = None, period: str = 'daily'):
+    def __init__(self, model_type: str = 'xgboost', data_path: str = None, period: str = 'daily'):
         """
         Initialize the DemandForecastModel.
         
@@ -279,16 +279,24 @@ class DemandForecastModel:
                 )
         
         # ========== PLACE/LOCATION FEATURES ==========
-        # Aggregate place-level statistics
+        # Aggregate place-level statistics from PREVIOUS day to avoid data leakage
+        # We shift the date forward so each row gets yesterday's place stats, not today's
         place_stats = df.groupby(['place_id', 'date']).agg({
             'demand': 'sum',
             'item_id': 'nunique'
         }).reset_index()
         place_stats.columns = ['place_id', 'date', 'place_total_demand', 'place_unique_items']
         
+        # Shift date forward by 1 day - this means when we merge, each row gets PREVIOUS day's stats
+        place_stats['date'] = place_stats['date'] + pd.Timedelta(days=1)
+        
         df = df.merge(place_stats, on=['place_id', 'date'], how='left')
         
-        # Place-level lag features and rolling stats
+        # Fill NaN for first day of each place (no previous data available)
+        df['place_total_demand'] = df['place_total_demand'].fillna(0)
+        df['place_unique_items'] = df['place_unique_items'].fillna(0)
+        
+        # Place-level lag features and rolling stats (now based on already-lagged place_total_demand)
         df['place_demand_lag_1'] = df.groupby('place_id')['place_total_demand'].shift(1)
         df['place_demand_lag_7'] = df.groupby('place_id')['place_total_demand'].shift(7)
         df['place_demand_rolling_mean_7'] = df.groupby('place_id')['place_total_demand'].transform(
@@ -298,7 +306,7 @@ class DemandForecastModel:
             lambda x: x.rolling(30, min_periods=1).mean()
         )
         
-        # Item's share of place demand
+        # Item's share of place demand (using lagged place demand)
         df['item_share_of_place'] = df['demand'] / (df['place_total_demand'] + 1e-6)  # Avoid division by zero
         
         # ========== INTERACTION FEATURES ==========
