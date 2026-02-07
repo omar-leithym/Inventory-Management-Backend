@@ -22,6 +22,10 @@ const userSchema = mongoose.Schema({
     phone: {
         type: String,
         required: [true, "Please add a phone number"]
+    },
+    budget: {
+        type: Number,
+        default: null
     }
 }, {
     timestamps: true

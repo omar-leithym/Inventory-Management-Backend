@@ -21,6 +21,7 @@ app.use("/api/sales", require("./routes/saleRoutes"));
 app.use("/api/analytics", require("./routes/analyticsRoutes"));
 app.use("/api/menu-items", require("./routes/menuItemRoutes"));
 app.use("/api/addons", require("./routes/addonRoutes"));
+app.use("/api/recommendations", require("./routes/recommendationRoutes"));
 
 // Error Middleware
 app.use(errorHandler);
