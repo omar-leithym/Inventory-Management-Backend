@@ -5,7 +5,7 @@ Dependencies: dataclasses, typing, numpy, lightgbm, scikit-learn
 Author: SOFIDA Team
 
 Notes:
-- This module performs randomized search over a predefined parameter space.
+- This module performs random search over a predefined parameter space.
 - Categorical features are aligned across splits to avoid LightGBM category mismatch errors.
 """
 
