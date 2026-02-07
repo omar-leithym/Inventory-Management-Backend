@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Model files (large - consider Git LFS if needed)
+# Uncomment if you don't want to track model files
+# *.pkl
+# models/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+*.txt.log
+training*.log
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Environment variables
+.env
+.env.local
+
+# Data (if large, consider git-lfs)
+# Uncomment if data files are too large
+# data/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
