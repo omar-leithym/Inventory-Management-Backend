@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Sale = require("../models/saleModel");
+const Stock = require("../models/stockModel");
 
 // @desc    Log a new sale
 // @route   POST /api/sales
@@ -20,6 +21,40 @@ const createSale = asyncHandler(async (req, res) => {
         price,
         discount: discount || 0
     });
+
+    // Auto-deduct stock for MenuItem
+    const menuItemStock = await Stock.findOne({
+        user: req.user.id,
+        item: menuItemId,
+        itemType: 'MenuItem'
+    });
+
+    if (menuItemStock) {
+        menuItemStock.quantity -= (quantity || 1);
+        await menuItemStock.save();
+        console.log(`✅ Deducted ${quantity || 1} from MenuItem ${menuItemId}. New quantity: ${menuItemStock.quantity}`);
+    } else {
+        console.log(`⚠️  No stock entry found for MenuItem ${menuItemId}`);
+    }
+
+    // Auto-deduct stock for each Addon
+    if (addonIds && addonIds.length > 0) {
+        for (const addonId of addonIds) {
+            const addonStock = await Stock.findOne({
+                user: req.user.id,
+                item: addonId,
+                itemType: 'Addon'
+            });
+
+            if (addonStock) {
+                addonStock.quantity -= (quantity || 1);
+                await addonStock.save();
+                console.log(`✅ Deducted ${quantity || 1} from Addon ${addonId}. New quantity: ${addonStock.quantity}`);
+            } else {
+                console.log(`⚠️  No stock entry found for Addon ${addonId}`);
+            }
+        }
+    }
 
     res.status(201).json(sale);
 });

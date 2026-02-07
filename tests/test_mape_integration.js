@@ -8,12 +8,12 @@ dotenv.config({ path: envPath });
 
 console.log("Loading modules...");
 try {
-    const User = require('./src/models/userModel');
-    const MenuItem = require('./src/models/menuItemModel');
-    const Addon = require('./src/models/addonModel');
-    const Sale = require('./src/models/saleModel');
-    const Forecast = require('./src/models/ForecastModel');
-    const MAPECalculator = require('./src/services/MAPECalculator');
+    const User = require('../src/models/userModel');
+    const MenuItem = require('../src/models/menuItemModel');
+    const Addon = require('../src/models/addonModel');
+    const Sale = require('../src/models/saleModel');
+    const Forecast = require('../src/models/ForecastModel');
+    const MAPECalculator = require('../src/services/MAPECalculator');
 
     async function runTest() {
         if (!process.env.MONGO_URI) {
