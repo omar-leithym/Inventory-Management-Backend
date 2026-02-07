@@ -186,10 +186,52 @@ const searchUsers = asyncHandler(async (req, res) => {
     res.status(200).json(users);
 });
 
+// @desc    Update user settings (e.g., demand window)
+// @route   PUT /api/users/settings
+// @access  Private
+const updateSettings = asyncHandler(async (req, res) => {
+    const { demandWindow } = req.body;
+
+    // Validate demandWindow (Basic validation: ensure it's a number and one of the allowed values if strict, but model enum handles that too)
+    // Model enum is strict, so mongoose will error if invalid.
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+    }
+
+    if (demandWindow !== undefined) {
+        if (!user.settings) user.settings = {};
+        user.settings.demandWindow = demandWindow;
+    }
+
+    const updatedUser = await user.save();
+
+    res.status(200).json(updatedUser.settings);
+});
+
+// @desc    Get user settings
+// @route   GET /api/users/settings
+// @access  Private
+const getSettings = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+    }
+
+    res.status(200).json(user.settings || { demandWindow: 7 });
+});
+
 module.exports = {
     registerUser,
     loginUser,
     getUser,
     updateUser,
-    searchUsers
+    searchUsers,
+    updateSettings,
+    getSettings
 };

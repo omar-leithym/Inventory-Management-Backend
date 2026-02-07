@@ -26,6 +26,13 @@ const userSchema = mongoose.Schema({
     budget: {
         type: Number,
         default: null
+    },
+    settings: {
+        demandWindow: {
+            type: Number,
+            default: 7, // Default to Weekly planning
+            enum: [1, 7, 30] // Restrict to Daily, Weekly, Monthly
+        }
     }
 }, {
     timestamps: true

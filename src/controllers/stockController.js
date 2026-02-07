@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler");
+const mongoose = require("mongoose");
 const Stock = require("../models/stockModel");
 const MenuItem = require("../models/menuItemModel");
 const Addon = require("../models/addonModel");
@@ -137,13 +138,18 @@ const getStockRecommendations = asyncHandler(async (req, res) => {
     // 2. Fetch current user's stock
     const userStock = await Stock.find({ user: req.user.id });
 
+    // 2.1 Fetch User Settings for Demand Window
+    // (We fetch fresh user data to ensure we have the settings field)
+    const user = await require("../models/userModel").findById(req.user.id);
+    const demandDays = user.settings && user.settings.demandWindow ? user.settings.demandWindow : 7;
+
     // 3. Instantiate Calculator
     const FreshFlowStockCalculator = require('../services/StockFlowCalculation');
     const calculator = new FreshFlowStockCalculator();
 
     // 4. Calculate Needs
-    // Defaulting to 7 days as per user requirement standard
-    const recommendations = await calculator.calculateAllStockNeeds(allCatalogItems, userStock, 7);
+    // Use the user's preferred demand window (days)
+    const recommendations = await calculator.calculateAllStockNeeds(allCatalogItems, userStock, demandDays);
 
     // 5. Generate Alerts
     const AlertGenerator = require('../services/AlertGenerator');
