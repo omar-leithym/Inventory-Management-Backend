@@ -8,7 +8,8 @@ const stockSchema = mongoose.Schema({
     },
     item: {
         type: Number,  // Custom integer IDs (e.g., 59911) instead of ObjectId
-        required: true
+        required: true,
+        ref: 'MenuItem'
     },
     itemType: {
         type: String,
