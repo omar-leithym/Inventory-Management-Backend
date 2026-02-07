@@ -18,11 +18,19 @@ const getPrioritizedItems = asyncHandler(async (req, res) => {
         throw new Error("User not found");
     }
 
-    const budget = user.budget || 0; // Default to 0 if null
+    // Budget Logic: Query > User > Infinity
+    let budget = Infinity;
+    if (req.query.budget !== undefined && req.query.budget !== null) {
+        budget = parseFloat(req.query.budget);
+    } else if (user.budget !== null && user.budget !== undefined) {
+        budget = user.budget;
+    }
 
-    // 2. Fetch Forecasts
-    // Assuming Forecast model tracks demand for MenuItems (and potentially Addons associated with them)
-    const forecasts = await Forecast.find({ user: userId }).populate('menuItem');
+    // 2. Fetch Forecasts with Population
+    // Forecast model has 'addons' array (ObjectIds) and 'predictedQuantity' array (Numbers)
+    const forecasts = await Forecast.find({ user: userId })
+        .populate('menuItem')
+        .populate('addons');
 
     // 3. Fetch Current Stock
     const stocks = await Stock.find({ user: userId });
@@ -31,54 +39,67 @@ const getPrioritizedItems = asyncHandler(async (req, res) => {
     let potentialPurchases = [];
 
     for (const forecast of forecasts) {
-        if (!forecast.menuItem) continue; // Skip if menuItem is missing
+        if (!forecast.menuItem) continue;
 
-        const menuItem = forecast.menuItem;
-        const itemId = menuItem._id.toString();
+        // --- Process Main Item ---
+        // Assumption: predictedQuantity[0] is for the main MenuItem
+        const mainPredicted = forecast.predictedQuantity[0] || 0;
+        const mainItemId = forecast.menuItem._id.toString();
 
-        // Calculate Total Predicted Demand from the array of predicted quantities
-        const totalPredicted = forecast.predictedQuantity.reduce((a, b) => a + b, 0);
-
-        // Find current stock for this item
-        const stockEntry = stocks.find(
-            (s) => s.item.toString() === itemId && s.itemType === 'MenuItem'
+        const mainStockEntry = stocks.find(
+            (s) => s.item.toString() === mainItemId && s.itemType === 'MenuItem'
         );
-        const currentStock = stockEntry ? stockEntry.quantity : 0;
+        const mainCurrentStock = mainStockEntry ? mainStockEntry.quantity : 0;
+        const mainNeeded = mainPredicted - mainCurrentStock;
 
-        // Calculate Needed Quantity
-        const needed = totalPredicted - currentStock;
-
-        if (needed > 0) {
-            // Calculate Cost
-            const price = menuItem.price || 0;
-            const totalCost = needed * price;
-
+        if (mainNeeded > 0) {
             potentialPurchases.push({
                 item: {
-                    _id: menuItem._id,
-                    title: menuItem.title,
+                    _id: forecast.menuItem._id,
+                    title: forecast.menuItem.title,
                     type: 'MenuItem',
-                    price: price
+                    price: forecast.menuItem.price || 0
                 },
-                currentStock,
-                predictedDemand: totalPredicted,
-                neededQuantity: needed,
-                totalCost,
-                priorityScore: needed // Simple priority: highest deficit first
+                currentStock: mainCurrentStock,
+                predictedDemand: mainPredicted,
+                neededQuantity: mainNeeded,
+                priorityScore: mainNeeded
             });
         }
 
-        // TODO: Handle Addons if Forecast model supports them separately or if we need to infer addon demand
-        // For now, focusing on MenuItems as per Forecast structure roughly seen.
+        // --- Process Addons ---
+        // Assumption: predictedQuantity[i+1] corresponds to addons[i]
+        if (forecast.addons && forecast.addons.length > 0) {
+            forecast.addons.forEach((addon, index) => {
+                // predictedQuantity index is offset by 1 because 0 is main item
+                const addonPredicted = forecast.predictedQuantity[index + 1] || 0;
+                const addonId = addon._id.toString();
+
+                const addonStockEntry = stocks.find(
+                    (s) => s.item.toString() === addonId && s.itemType === 'Addon'
+                );
+                const addonCurrentStock = addonStockEntry ? addonStockEntry.quantity : 0;
+                const addonNeeded = addonPredicted - addonCurrentStock;
+
+                if (addonNeeded > 0) {
+                    potentialPurchases.push({
+                        item: {
+                            _id: addon._id,
+                            title: addon.title,
+                            type: 'Addon',
+                            price: addon.price || 0
+                        },
+                        currentStock: addonCurrentStock,
+                        predictedDemand: addonPredicted,
+                        neededQuantity: addonNeeded,
+                        priorityScore: addonNeeded
+                    });
+                }
+            });
+        }
     }
 
-    // NOTE: If there are Addon forecasts, we should handle them too.
-    // The Forecast model shown had 'addons' array, but 'predictedQuantity' array. 
-    // It's ambiguous if predictedQuantity applies to the *combination* or just the main item.
-    // Assuming Main Item for now to keep it simple as per "prioritize items to buy".
-
-    // 5. Prioritize
-    // Sort by priorityScore (descending) -> Largest Deficit first
+    // 5. Prioritize (Largest Deficit First)
     potentialPurchases.sort((a, b) => b.priorityScore - a.priorityScore);
 
     // 6. Allocate Budget
@@ -86,24 +107,40 @@ const getPrioritizedItems = asyncHandler(async (req, res) => {
     let recommendedItems = [];
 
     for (const purchase of potentialPurchases) {
-        if (remainingBudget <= 0) break;
+        // If budget is finite and exhausted, stop or skip
+        // But we might want to check if we can afford *anything*, so maybe continue
+        // prioritizing items we can afford?
+        // For now, strict priority: if top priority can't be bought, we move next? 
+        // Or we try to buy as much as possible.
 
-        // Determine how many we can buy with remaining budget
-        const maxAffordable = Math.floor(remainingBudget / purchase.item.price);
-        const quantityToBuy = Math.min(purchase.neededQuantity, maxAffordable);
+        if (remainingBudget <= 0 && budget !== Infinity) break;
+
+        let quantityToBuy = 0;
+        let notes = "";
+
+        if (budget === Infinity) {
+            quantityToBuy = purchase.neededQuantity;
+            notes = "Full fulfillment (No budget limit)";
+        } else {
+            const maxAffordable = Math.floor(remainingBudget / purchase.item.price);
+            quantityToBuy = Math.min(purchase.neededQuantity, maxAffordable);
+            notes = quantityToBuy < purchase.neededQuantity ? "Partial fulfillment due to budget" : "Full fulfillment";
+        }
 
         if (quantityToBuy > 0) {
             const cost = quantityToBuy * purchase.item.price;
-            remainingBudget -= cost;
+            if (budget !== Infinity) {
+                remainingBudget -= cost;
+            }
 
             recommendedItems.push({
                 ...purchase,
                 recommendedQuantity: quantityToBuy,
                 recommendedCost: cost,
-                notes: quantityToBuy < purchase.neededQuantity ? "Partial fulfillment due to budget" : "Full fulfillment"
+                notes
             });
-        } else {
-            // Can't afford even one
+        } else if (budget !== Infinity) {
+            // Track unmet needs due to budget
             recommendedItems.push({
                 ...purchase,
                 recommendedQuantity: 0,
@@ -114,9 +151,9 @@ const getPrioritizedItems = asyncHandler(async (req, res) => {
     }
 
     res.status(200).json({
-        budget,
-        remainingBudget,
-        totalRecommendedCost: budget - remainingBudget,
+        budget: budget === Infinity ? "Unlimited" : budget,
+        remainingBudget: budget === Infinity ? "Unlimited" : remainingBudget,
+        totalRecommendedCost: budget === Infinity ? recommendedItems.reduce((acc, i) => acc + i.recommendedCost, 0) : (budget - remainingBudget),
         recommendedItems
     });
 });
