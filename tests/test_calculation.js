@@ -1,3 +1,10 @@
+/**
+ * File: test_calculation.js
+ * Description: Test script for validating stock calculation logic (targets and replenishment).
+ * Dependencies: StockFlowCalculation
+ * Author: Sample Team
+ */
+
 const FreshFlowStockCalculator = require('../src/services/StockFlowCalculation');
 
 async function testStockCalculation() {

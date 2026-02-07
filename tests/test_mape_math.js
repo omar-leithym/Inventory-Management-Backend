@@ -1,3 +1,10 @@
+/**
+ * File: test_mape_math.js
+ * Description: Unit test for specific MAPE math scenarios using a mocked calculator.
+ * Dependencies: mongoose, MAPECalculator, ForecastModel
+ * Author: Sample Team
+ */
+
 const mongoose = require('mongoose');
 const MAPECalculator = require('../src/services/MAPECalculator');
 const Forecast = require('../src/models/ForecastModel');

@@ -1,3 +1,10 @@
+/**
+ * File: importMenuItems.js
+ * Description: Script to import menu item data from CSV to MongoDB.
+ * Dependencies: fs, mongoose, dotenv, path, menuItemModel
+ * Author: Sample Team
+ */
+
 const fs = require('fs');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');

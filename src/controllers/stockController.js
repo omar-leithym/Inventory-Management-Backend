@@ -2,6 +2,7 @@
  * File: stockController.js
  * Description: Controller for inventory management and stock recommendations.
  * Dependencies: express-async-handler, mongoose, stockModel, menuItemModel, addonModel
+ * Author: Sample Team
  * 
  * This controller handles stock CRUD operations and generates AI-powered
  * stock recommendations based on demand predictions.
@@ -18,6 +19,18 @@ const Addon = require("../models/addonModel");
  * 
  * Creates a new stock entry or updates existing quantity for a menu item or addon.
  * Validates item existence before adding to inventory.
+ * 
+ * Request Body:
+ *     itemId (string): ID of the item.
+ *     itemType (string): 'MenuItem' or 'Addon'.
+ *     quantity (number): Quantity to add/set.
+ * 
+ * Returns:
+ *     Object: Updated or created stock entry.
+ * 
+ * Raises:
+ *     400: Invalid item type.
+ *     404: Item not found.
  * 
  * @route   POST /api/stock
  * @access  Private
@@ -73,6 +86,9 @@ const addStock = asyncHandler(async (req, res) => {
  * 
  * Returns complete inventory with populated item details.
  * 
+ * Returns:
+ *     Array: List of stock items.
+ * 
  * @route   GET /api/stock
  * @access  Private
  */
@@ -88,6 +104,16 @@ const getStock = asyncHandler(async (req, res) => {
  * 
  * Allows manual adjustment of inventory levels. Verifies user authorization
  * before allowing updates.
+ * 
+ * Request Body:
+ *     quantity (number): New quantity value.
+ * 
+ * Returns:
+ *     Object: Updated stock item.
+ * 
+ * Raises:
+ *     404: Stock item not found.
+ *     401: User not authorized.
  * 
  * @route   PUT /api/stock/:id
  * @access  Private
@@ -124,6 +150,13 @@ const updateStock = asyncHandler(async (req, res) => {
  * 
  * Removes stock entry after verifying user authorization.
  * 
+ * Returns:
+ *     Object: JSON object with deleted item ID.
+ * 
+ * Raises:
+ *     404: Stock item not found.
+ *     401: User not authorized.
+ * 
  * @route   DELETE /api/stock/:id
  * @access  Private
  */
@@ -157,6 +190,17 @@ const deleteStock = asyncHandler(async (req, res) => {
  * Analyzes current inventory levels, fetches demand predictions, and generates
  * actionable recommendations for stock replenishment. Uses user-defined settings
  * for lead time, safety buffers, and alert thresholds.
+ * 
+ * Returns:
+ *     Object: recommendations, alerts, summary, and appliedSettings.
+ * 
+ * Example Response:
+ *     {
+ *         "recommendations": [...],
+ *         "alerts": ["Low stock: Burger"],
+ *         "summary": {...},
+ *         "appliedSettings": {...}
+ *     }
  * 
  * @route   GET /api/stock/recommendations
  * @access  Private
@@ -222,6 +266,13 @@ const getStockRecommendations = asyncHandler(async (req, res) => {
  * 
  * Retrieves stock details with populated item information.
  * Verifies user authorization.
+ * 
+ * Returns:
+ *     Object: Stock item details.
+ * 
+ * Raises:
+ *     404: Stock item not found.
+ *     401: Unauthorized.
  * 
  * @route   GET /api/stock/:id
  * @access  Private

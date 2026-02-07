@@ -1,3 +1,10 @@
+/**
+ * File: sync_sales_to_stock.js
+ * Description: Script to synchronize historical sales data with current stock levels.
+ * Dependencies: mongoose, dotenv, path, saleModel, stockModel
+ * Author: Sample Team
+ */
+
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');

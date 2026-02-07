@@ -1,3 +1,10 @@
+/**
+ * File: quick_stock_test.js
+ * Description: Quick verification script to check stock existence for a specific item.
+ * Dependencies: mongoose, dotenv, path, stockModel
+ * Author: Sample Team
+ */
+
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');

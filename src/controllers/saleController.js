@@ -2,6 +2,7 @@
  * File: saleController.js
  * Description: Controller for managing sales transactions and stock updates.
  * Dependencies: express-async-handler, saleModel, stockModel
+ * Author: Sample Team
  * 
  * This controller handles sale creation, retrieval, and automatic stock deduction
  * for menu items and addons.
@@ -16,6 +17,24 @@ const Stock = require("../models/stockModel");
  * 
  * Creates a sale record and automatically deducts inventory for the
  * menu item and any associated addons.
+ * 
+ * Request Body:
+ *     menuItemId (string): ID of the menu item.
+ *     addonIds (Array<string>): IDs of sold addons.
+ *     quantity (number): Quantity sold.
+ *     pricePerUnit (number): Price per unit.
+ *     discount (number): Discount amount.
+ * 
+ * Returns:
+ *     Object: Created sale record.
+ * 
+ * Example Response:
+ *     {
+ *         "_id": "64e5...",
+ *         "menuItem": "64e5...",
+ *         "quantity": 2,
+ *         "totalPrice": 10.0
+ *     }
  * 
  * @route   POST /api/sales
  * @access  Private
@@ -80,6 +99,9 @@ const createSale = asyncHandler(async (req, res) => {
  * Returns sales sorted by creation date (newest first) with populated
  * menu item and addon details.
  * 
+ * Returns:
+ *     Array: List of sale records.
+ * 
  * @route   GET /api/sales
  * @access  Private
  */
@@ -95,6 +117,13 @@ const getSales = asyncHandler(async (req, res) => {
  * Get a specific sale by ID.
  * 
  * Retrieves sale details and verifies user authorization.
+ * 
+ * Returns:
+ *     Object: Sale details.
+ * 
+ * Raises:
+ *     404: Sale not found.
+ *     401: Unauthorized.
  * 
  * @route   GET /api/sales/:id
  * @access  Private

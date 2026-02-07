@@ -1,3 +1,10 @@
+/**
+ * File: test_stock_integration.js
+ * Description: Comprehensive integration test for stock flow, using real data from the database.
+ * Dependencies: mongoose, dotenv, path, menuItemModel, addonModel, stockModel, StockFlowCalculation, AlertGenerator
+ * Author: Sample Team
+ */
+
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');

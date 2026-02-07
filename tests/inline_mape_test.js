@@ -1,3 +1,10 @@
+/**
+ * File: inline_mape_test.js
+ * Description: Standalone test for MAPE calculation logic using inline schema definitions.
+ * Dependencies: mongoose, dotenv, path
+ * Author: Sample Team
+ */
+
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');

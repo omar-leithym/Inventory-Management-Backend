@@ -1,10 +1,42 @@
+/**
+ * File: analyticsController.js
+ * Description: Controller for analytics and forecasting accuracy (MAPE).
+ * Dependencies: express-async-handler, MAPECalculator, menuItemModel
+ * Author: Sample Team
+ */
+
 const asyncHandler = require("express-async-handler");
 const MAPECalculator = require("../services/MAPECalculator");
 const MenuItem = require("../models/menuItemModel");
 
-// @desc    Get forecast accuracy (MAPE) for an item
-// @route   GET /api/analytics/accuracy/:itemId
-// @access  Private
+/**
+ * Get forecast accuracy (MAPE) for a specific menu item.
+ * 
+ * Calculates the Mean Absolute Percentage Error for an item over a specified date range.
+ * Defaults to the last 30 days if no range is provided.
+ * 
+ * Request Parameters:
+ *     itemId (string): The ID of the menu item.
+ * 
+ * Query Params:
+ *     startDate (string): Start date (YYYY-MM-DD).
+ *     endDate (string): End date (YYYY-MM-DD).
+ * 
+ * Returns:
+ *     Object: JSON object containing MAPE analysis.
+ * 
+ * Example Response:
+ *     {
+ *         "success": true,
+ *         "item": "Burger",
+ *         "period": { "start": "2023-10-01", "end": "2023-10-31" },
+ *         "mape": 12.5,
+ *         "accuracy": 87.5
+ *     }
+ * 
+ * @route   GET /api/analytics/accuracy/:itemId
+ * @access  Private
+ */
 const getForecastAccuracy = asyncHandler(async (req, res) => {
     const { itemId } = req.params;
     let { startDate, endDate } = req.query;

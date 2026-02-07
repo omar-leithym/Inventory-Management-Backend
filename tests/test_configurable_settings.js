@@ -1,3 +1,10 @@
+/**
+ * File: test_configurable_settings.js
+ * Description: Verification tests for user-configurable settings in stock calculations.
+ * Dependencies: mongoose, dotenv, userModel, StockFlowCalculation, AlertGenerator
+ * Author: Sample Team
+ */
+
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config();

@@ -1,6 +1,8 @@
 """
-Test script for demand forecasting model.
-Runs training and prediction, outputs metrics.
+File: test_model.py
+Description: Test script for demand forecasting model (training and prediction).
+Dependencies: sys, pandas, numpy, datetime, warnings, DemandForecastModel
+Author: Sample Team
 """
 import sys
 sys.path.insert(0, '/Users/mohamedemara/Desktop/dih/DIH-X-AUC-Hackathon-main')

@@ -1,3 +1,10 @@
+/**
+ * File: recommendationController.js
+ * Description: Controller for prioritized purchase recommendations based on demand and budget.
+ * Dependencies: express-async-handler, userModel, stockModel, ForecastModel, menuItemModel, addonModel
+ * Author: Sample Team
+ */
+
 const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
 const Stock = require("../models/stockModel");
@@ -5,9 +12,41 @@ const Forecast = require("../models/ForecastModel");
 const MenuItem = require("../models/menuItemModel");
 const Addon = require("../models/addonModel");
 
-// @desc    Get prioritized items for purchase
-// @route   GET /api/recommendations/prioritize
-// @access  Private
+/**
+ * Generates a prioritized list of items to purchase based on demand forecasts and current stock.
+ * 
+ * Logic:
+ * 1. Fetches user budget (from profile or query param).
+ * 2. Retrieves demand forecasts and current stock levels.
+ * 3. Calculates the deficit calculation (Predicted - Current).
+ * 4. Prioritizes items with the largest deficit.
+ * 5. Allocates budget to highest priority items first.
+ * 
+ * Query Params:
+ *     budget (number): Optional budget override to simulate different spending limits.
+ * 
+ * Returns:
+ *     Object: Recommendation analysis including budget details and item list.
+ * 
+ * Example Response:
+ *     {
+ *         "budget": 1000,
+ *         "remainingBudget": 250.50,
+ *         "totalRecommendedCost": 749.50,
+ *         "recommendedItems": [
+ *             {
+ *                 "item": { "title": "Burger", "type": "MenuItem", "price": 5.0 },
+ *                 "neededQuantity": 50,
+ *                 "recommendedQuantity": 50,
+ *                 "priorityScore": 50,
+ *                 "notes": "Full fulfillment"
+ *             }
+ *         ]
+ *     }
+ * 
+ * @route   GET /api/recommendations/prioritize
+ * @access  Private
+ */
 const getPrioritizedItems = asyncHandler(async (req, res) => {
     const userId = req.user.id;
 

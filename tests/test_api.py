@@ -1,5 +1,8 @@
 """
-Test script for the Demand Forecast API.
+File: test_api.py
+Description: Test script for the Demand Forecast API.
+Dependencies: sys, os, json, warnings, unittest.mock, flask
+Author: Sample Team
 """
 import sys
 import os

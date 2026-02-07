@@ -1,3 +1,10 @@
+/**
+ * File: test_demand_window_simple.js
+ * Description: Simple test to verify that the demand window setting is correctly used in calculations.
+ * Dependencies: mongoose, dotenv, path, userModel, StockFlowCalculation
+ * Author: Sample Team
+ */
+
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');

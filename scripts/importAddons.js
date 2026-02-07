@@ -1,3 +1,10 @@
+/**
+ * File: importAddons.js
+ * Description: Script to import addon data from CSV to MongoDB.
+ * Dependencies: fs, mongoose, dotenv, path, addonModel
+ * Author: Sample Team
+ */
+
 const fs = require('fs');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');

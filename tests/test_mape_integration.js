@@ -1,3 +1,10 @@
+/**
+ * File: test_mape_integration.js
+ * Description: Integration test to verify MAPE calculation with live database data.
+ * Dependencies: mongoose, dotenv, path, userModel, menuItemModel, addonModel, saleModel, ForecastModel, MAPECalculator
+ * Author: Sample Team
+ */
+
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 

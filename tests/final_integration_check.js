@@ -1,3 +1,10 @@
+/**
+ * File: final_integration_check.js
+ * Description: Integration test to verify full system flow (User Settings -> Stock Calculation -> Alerts).
+ * Dependencies: mongoose, dotenv, userModel, stockModel, menuItemModel, StockFlowCalculation, AlertGenerator
+ * Author: Sample Team
+ */
+
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config({ path: 'src/.env' });

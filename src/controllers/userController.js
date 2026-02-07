@@ -2,6 +2,7 @@
  * File: userController.js
  * Description: Controller for user authentication, profile management, and settings.
  * Dependencies: express-async-handler, userModel, jwt, bcrypt, validator, libphonenumber-js
+ * Author: Sample Team
  * 
  * This controller manages user registration, login, profile updates, and
  * configurable settings for inventory management preferences.
@@ -32,6 +33,19 @@ const genToken = (id) => {
  * 
  * Validates user input, checks for existing accounts, and creates
  * a new user with hashed password.
+ * 
+ * Request Body:
+ *     email (string): User email (unique).
+ *     password (string): User password.
+ *     phone (string): Phone number (validated).
+ *     firstName (string): User first name.
+ *     lastName (string): User last name.
+ * 
+ * Returns:
+ *     Object: User details and JWT token.
+ * 
+ * Raises:
+ *     400: Missing fields, invalid password/email/phone, or email exists.
  * 
  * @route   POST /api/users/register
  * @access  Public
@@ -99,6 +113,16 @@ const registerUser = asyncHandler(async (req, res) => {
  * 
  * Verifies credentials and returns JWT for subsequent requests.
  * 
+ * Request Body:
+ *     email (string): User email.
+ *     password (string): User password.
+ * 
+ * Returns:
+ *     Object: User details and JWT token.
+ * 
+ * Raises:
+ *     400: Missing credentials or invalid login.
+ * 
  * @route   POST /api/users/login
  * @access  Public
  */
@@ -132,6 +156,12 @@ const loginUser = asyncHandler(async (req, res) => {
  * 
  * Returns user details for the currently logged-in user.
  * 
+ * Returns:
+ *     Object: User profile details (excluding password).
+ * 
+ * Raises:
+ *     404: User not found.
+ * 
  * @route   GET /api/users/getuser
  * @access  Private
  */
@@ -156,6 +186,18 @@ const getUser = asyncHandler(async (req, res) => {
  * 
  * Allows users to update their email, first name, and last name.
  * Validates email uniqueness before updating.
+ * 
+ * Request Body:
+ *     email (string): New email (optional).
+ *     firstName (string): New first name (optional).
+ *     lastName (string): New last name (optional).
+ * 
+ * Returns:
+ *     Object: Updated user profile and new token.
+ * 
+ * Raises:
+ *     404: User not found.
+ *     400: Email already exists.
  * 
  * @route   PATCH /api/users/updateuser/:id
  * @access  Private
@@ -203,6 +245,12 @@ const updateUser = asyncHandler(async (req, res) => {
  * 
  * Performs case-insensitive search and excludes current user from results.
  * 
+ * Query Params:
+ *     query (string): Search term (email or phone).
+ * 
+ * Returns:
+ *     Array: List of matching user objects.
+ * 
  * @route   GET /api/users/search
  * @access  Private
  */
@@ -231,6 +279,16 @@ const searchUsers = asyncHandler(async (req, res) => {
  * 
  * Allows users to configure demand window, lead time, safety stock buffer,
  * low stock threshold, and budget limits for personalized recommendations.
+ * 
+ * Request Body:
+ *     demandWindow (number): Days of history to analyze.
+ *     leadTime (number): Days to restock.
+ *     safetyStockBuffer (number): Percentage buffer.
+ *     lowStockThreshold (number): Alert threshold unit count.
+ *     budgetLimit (number): Budget cap.
+ * 
+ * Returns:
+ *     Object: Updated settings object.
  * 
  * @route   PUT /api/users/settings
  * @access  Private
@@ -273,6 +331,9 @@ const updateSettings = asyncHandler(async (req, res) => {
  * Get user inventory management settings.
  * 
  * Returns current configuration for demand forecasting and stock management.
+ * 
+ * Returns:
+ *     Object: User settings object.
  * 
  * @route   GET /api/users/settings
  * @access  Private
