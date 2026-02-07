@@ -213,7 +213,6 @@ const updateSettings = asyncHandler(async (req, res) => {
     if (lowStockThreshold !== undefined) user.settings.lowStockThreshold = lowStockThreshold;
     if (budgetLimit !== undefined) {
         user.settings.budgetLimit = budgetLimit;
-        user.budget = budgetLimit; // Keep top-level budget in sync if applicable
     }
 
     const updatedUser = await user.save();
