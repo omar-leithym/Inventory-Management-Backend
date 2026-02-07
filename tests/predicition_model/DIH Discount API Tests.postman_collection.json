@@ -1,0 +1,206 @@
+{
+  "info": {
+    "_postman_id": "73c8306a-2a75-4fe5-a6e6-9c8baf4358ec",
+    "name": "DIH Discount API Tests",
+    "description": "Health + discount prediction tests for the Flask discount API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "42905572"
+  },
+  "item": [
+    {
+      "name": "Health - GET /health",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response is JSON', function () {",
+              "  pm.response.to.be.json;",
+              "});",
+              "",
+              "const data = pm.response.json();",
+              "pm.test('status is ok', function () {",
+              "  pm.expect(data).to.have.property('status');",
+              "  pm.expect(data.status).to.eql('ok');",
+              "});",
+              "",
+              "pm.test('model_loaded is true', function () {",
+              "  pm.expect(data).to.have.property('model_loaded');",
+              "  pm.expect(data.model_loaded).to.eql(true);",
+              "});",
+              "",
+              "pm.test('artifact_prefix exists', function () {",
+              "  pm.expect(data).to.have.property('artifact_prefix');",
+              "  pm.expect(String(data.artifact_prefix).length).to.be.greaterThan(0);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Predict - POST /discount",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response is JSON', function () {",
+              "  pm.response.to.be.json;",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('Has result object', function () {",
+              "  pm.expect(body).to.have.property('result');",
+              "  pm.expect(body.result).to.be.an('object');",
+              "});",
+              "",
+              "// Try to store best discount percent if the API returns it under common keys",
+              "const r = body.result || {};",
+              "const candidates = ['best_pct', 'recommended_pct', 'discount_pct', 'pct', 'best_discount_pct'];",
+              "let found = null;",
+              "for (const k of candidates) {",
+              "  if (r[k] !== undefined && r[k] !== null) {",
+              "    found = r[k];",
+              "    break;",
+              "  }",
+              "}",
+              "",
+              "if (found !== null) {",
+              "  pm.environment.set('last_best_pct', String(found));",
+              "}",
+              "",
+              "pm.test('If best pct exists, it is between 0 and 1', function () {",
+              "  if (found === null) {",
+              "    pm.expect(true).to.eql(true);",
+              "  } else {",
+              "    const v = Number(found);",
+              "    pm.expect(v).to.be.at.least(0);",
+              "    pm.expect(v).to.be.at.most(1);",
+              "  }",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount_left\": {{amount_left}},\n  \"expected_demand_for_remaining\": {{expected_demand_for_remaining}},\n  \"place_id\": {{place_id}},\n  \"item_id\": {{item_id}},\n  \"num_items_targeted\": {{num_items_targeted}},\n  \"window_hours\": {{window_hours}},\n  \"pct_grid\": {{pct_grid_json}},\n  \"baseline_pct\": {{baseline_pct}},\n  \"aggressiveness\": {{aggressiveness}},\n  \"return_debug\": false\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/discount",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "discount"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Predict Debug - POST /discount (return_debug=true)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response is JSON', function () {",
+              "  pm.response.to.be.json;",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('Has result object', function () {",
+              "  pm.expect(body).to.have.property('result');",
+              "  pm.expect(body.result).to.be.an('object');",
+              "});",
+              "",
+              "pm.test('Has debug array', function () {",
+              "  pm.expect(body).to.have.property('debug');",
+              "  pm.expect(body.debug).to.be.an('array');",
+              "});",
+              "",
+              "pm.test('Debug array length <= 50', function () {",
+              "  pm.expect(body.debug.length).to.be.at.most(50);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount_left\": {{amount_left}},\n  \"expected_demand_for_remaining\": {{expected_demand_for_remaining}},\n  \"place_id\": {{place_id}},\n  \"item_id\": {{item_id}},\n  \"num_items_targeted\": {{num_items_targeted}},\n  \"window_hours\": {{window_hours}},\n  \"pct_grid\": {{pct_grid_json}},\n  \"baseline_pct\": {{baseline_pct}},\n  \"aggressiveness\": {{aggressiveness}},\n  \"return_debug\": true,\n  \"debug_limit\": 50\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/discount",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "discount"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
