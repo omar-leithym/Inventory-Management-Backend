@@ -120,10 +120,37 @@ const deleteStock = asyncHandler(async (req, res) => {
 
     res.status(200).json({ id: req.params.id });
 });
+// @desc    Get stock recommendations based on AI prediction
+// @route   GET /api/stock/recommendations
+// @access  Private
+const getStockRecommendations = asyncHandler(async (req, res) => {
+    // 1. Fetch all catalog items (MenuItems + Addons)
+    const menuItems = await MenuItem.find({});
+    const addons = await Addon.find({});
 
+    // Normalize them into a single list with 'id' property
+    const allCatalogItems = [
+        ...menuItems.map(item => ({ id: item._id, name: item.title || item.name, type: 'MenuItem' })),
+        ...addons.map(item => ({ id: item._id, name: item.name, type: 'Addon' }))
+    ];
+
+    // 2. Fetch current user's stock
+    const userStock = await Stock.find({ user: req.user.id });
+
+    // 3. Instantiate Calculator
+    const FreshFlowStockCalculator = require('../services/StockFlowCalculation');
+    const calculator = new FreshFlowStockCalculator();
+
+    // 4. Calculate Needs
+    // Defaulting to 7 days as per user requirement standard
+    const recommendations = await calculator.calculateAllStockNeeds(allCatalogItems, userStock, 7);
+
+    res.status(200).json(recommendations);
+});
 module.exports = {
     addStock,
     getStock,
     updateStock,
-    deleteStock
+    deleteStock,
+    getStockRecommendations
 };
