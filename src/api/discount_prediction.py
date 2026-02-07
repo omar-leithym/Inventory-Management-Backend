@@ -2,7 +2,7 @@
 File: discount_flask_api.py
 Description: Flask API for serving the discount recommendation model via HTTP endpoints.
 Dependencies: os, time, threading, typing, pandas, flask, pathlib
-Author: DIH Hackathon Team
+Author: SOFIDA Team
 
 This module exposes two routes:
 - GET /health: Readiness probe that reports whether model artifacts are loaded.
