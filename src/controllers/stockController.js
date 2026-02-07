@@ -138,29 +138,46 @@ const getStockRecommendations = asyncHandler(async (req, res) => {
     // 2. Fetch current user's stock
     const userStock = await Stock.find({ user: req.user.id });
 
-    // 2.1 Fetch User Settings for Demand Window
-    // (We fetch fresh user data to ensure we have the settings field)
+    // 2.2 Fetch User Settings
     const user = await require("../models/userModel").findById(req.user.id);
-    const demandDays = user.settings && user.settings.demandWindow ? user.settings.demandWindow : 7;
+    const settings = user.settings || {};
+
+    // Configurable parameters with defaults
+    const demandDays = settings.demandWindow || 7;
+    const leadTime = settings.leadTime !== undefined ? settings.leadTime : 2;
+    const bufferPercentage = settings.safetyStockBuffer !== undefined ? settings.safetyStockBuffer : 20;
+    const lowStockThreshold = settings.lowStockThreshold !== undefined ? settings.lowStockThreshold : 20;
 
     // 3. Instantiate Calculator
     const FreshFlowStockCalculator = require('../services/StockFlowCalculation');
     const calculator = new FreshFlowStockCalculator();
 
     // 4. Calculate Needs
-    // Use the user's preferred demand window (days)
-    const recommendations = await calculator.calculateAllStockNeeds(allCatalogItems, userStock, demandDays);
+    // Use the user's preferred settings
+    const recommendations = await calculator.calculateAllStockNeeds(
+        allCatalogItems,
+        userStock,
+        demandDays,
+        leadTime,
+        bufferPercentage
+    );
 
     // 5. Generate Alerts
     const AlertGenerator = require('../services/AlertGenerator');
     const alertGen = new AlertGenerator();
-    const alerts = alertGen.generateStockAlerts(recommendations);
+    const alerts = alertGen.generateStockAlerts(recommendations, lowStockThreshold);
     const summary = alertGen.getDashboardSummary(alerts);
 
     res.status(200).json({
         recommendations,
         alerts,
-        summary
+        summary,
+        appliedSettings: {
+            demandDays,
+            leadTime,
+            bufferPercentage,
+            lowStockThreshold
+        }
     });
 });
 
