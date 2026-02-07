@@ -139,15 +139,7 @@ const getStockRecommendations = asyncHandler(async (req, res) => {
     const userStock = await Stock.find({ user: req.user.id });
 
     // 2.2 Fetch User Settings
-    // 2.2 Fetch User Settings
     const user = await require("../models/userModel").findById(req.user.id);
-    const settings = user.settings || {};
-
-    // Configurable parameters with defaults
-    const demandDays = settings.demandWindow || 7;
-    const leadTime = settings.leadTime !== undefined ? settings.leadTime : 2;
-    const bufferPercentage = settings.safetyStockBuffer !== undefined ? settings.safetyStockBuffer : 20;
-    const lowStockThreshold = settings.lowStockThreshold !== undefined ? settings.lowStockThreshold : 20;
     const settings = user.settings || {};
 
     // Configurable parameters with defaults
@@ -169,19 +161,11 @@ const getStockRecommendations = asyncHandler(async (req, res) => {
         leadTime,
         bufferPercentage
     );
-    // Use the user's preferred settings
-    const recommendations = await calculator.calculateAllStockNeeds(
-        allCatalogItems,
-        userStock,
-        demandDays,
-        leadTime,
-        bufferPercentage
-    );
+
 
     // 5. Generate Alerts
     const AlertGenerator = require('../services/AlertGenerator');
     const alertGen = new AlertGenerator();
-    const alerts = alertGen.generateStockAlerts(recommendations, lowStockThreshold);
     const alerts = alertGen.generateStockAlerts(recommendations, lowStockThreshold);
     const summary = alertGen.getDashboardSummary(alerts);
 
