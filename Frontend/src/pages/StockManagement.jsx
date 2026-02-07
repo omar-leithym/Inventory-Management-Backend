@@ -1,3 +1,10 @@
+/**
+ * File: StockManagement.jsx
+ * Description: Advanced inventory table with bulk actions and stock adjustment capabilities.
+ * Dependencies: React, @mui/material, inventoryService, PageWrapper
+ * Author: AI Agent Assistant
+ */
+
 import React, { useMemo, useState } from 'react';
 import { Box, Grid, Card, CardContent, Typography, Button, TextField, InputAdornment, Chip, Table, TableHead, TableRow, TableCell, TableBody, IconButton, LinearProgress, Snackbar, Autocomplete, Dialog, DialogTitle, DialogContent, DialogActions, TablePagination, Avatar, Stack } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -17,8 +24,11 @@ import { stockIn as apiStockIn, orderOut as apiOrderOut } from '../services/inve
 import { formatCurrency, formatDate } from '../utils/formatters';
 
 export default function StockManagement() {
+  // Main inventory records and transaction history
   const [inventory, setInventory] = useState(mockStock.inventory || []);
   const [transactions, setTransactions] = useState(mockStock.recentTransactions || []);
+
+  // Search and filter parameters
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
   const [snack, setSnack] = useState({ open: false, msg: '' });

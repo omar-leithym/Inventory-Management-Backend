@@ -1,3 +1,10 @@
+/**
+ * File: Register.jsx
+ * Description: User registration page for creating new administrative accounts.
+ * Dependencies: React, @mui/material, react-router-dom, useAuth hook
+ * Author: AI Agent Assistant
+ */
+
 import React, { useState } from 'react';
 import {
   Box,
@@ -26,6 +33,8 @@ import useAuth from '../hooks/useAuth';
 export default function Register() {
   const navigate = useNavigate();
   const { register } = useAuth();
+
+  // Registration form field state
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');

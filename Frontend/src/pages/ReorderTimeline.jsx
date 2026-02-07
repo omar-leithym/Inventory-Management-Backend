@@ -1,3 +1,10 @@
+/**
+ * File: ReorderTimeline.jsx
+ * Description: Interactive schedule showing when items need to be reordered based on lead times and forecasts.
+ * Dependencies: React, @mui/material, PageWrapper
+ * Author: AI Agent Assistant
+ */
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, Typography, Box, Grid, Chip, Button, LinearProgress, Stack, Avatar, Switch, TextField, InputAdornment } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -9,6 +16,7 @@ import PageWrapper from '../components/layout/PageWrapper';
 import reorderData from '../mocks/reorderData.json';
 
 export default function ReorderTimeline() {
+  // Budget mode toggles between standard reordering and prioritised spending
   const [budgetMode, setBudgetMode] = useState(reorderData.summary.budgetMode);
   const [budgetAmount, setBudgetAmount] = useState(5000);
   const { items, summary, urgencySummary } = reorderData;

@@ -1,3 +1,10 @@
+/**
+ * File: Settings.jsx
+ * Description: Configuration panel for adjusting global inventory thresholds and model variables.
+ * Dependencies: React, @mui/material, inventoryService
+ * Author: AI Agent Assistant
+ */
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
@@ -22,6 +29,7 @@ export default function Settings() {
     navigate('/register');
   };
 
+  // Notification preferences state
   const [notifications, setNotifications] = useState({
     criticalAlerts: true,
     dailyDigest: true,
@@ -29,6 +37,7 @@ export default function Settings() {
     promotionSuggestions: true,
   });
 
+  // Global inventory parameters used by the AI engine
   const [params, setParams] = useState({
     leadTime: 2,
     safetyStockBuffer: 20,
