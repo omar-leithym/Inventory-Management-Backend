@@ -1,3 +1,10 @@
+/**
+ * File: Login.jsx
+ * Description: User authentication page for secure access to the inventory platform.
+ * Dependencies: React, @mui/material, react-router-dom, useAuth hook
+ * Author: AI Agent Assistant
+ */
+
 import React, { useState } from 'react';
 import {
   Box,
@@ -25,6 +32,8 @@ import useAuth from '../hooks/useAuth';
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  // Local UI state for visibility and inputs
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

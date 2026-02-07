@@ -1,3 +1,10 @@
+/**
+ * File: Promotions.jsx
+ * Description: AI-powered promotion engine for clearing stock and maximizing margins.
+ * Dependencies: React, @mui/material, PageWrapper
+ * Author: AI Agent Assistant
+ */
+
 import React, { useState } from 'react';
 import { Card, CardContent, Typography, Box, Grid, Chip, Button, Stack, Avatar, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -13,6 +20,8 @@ import promotionsData from '../mocks/promotionsData.json';
 
 export default function Promotions() {
   const { promotions, suggestionsCount } = promotionsData;
+
+  // State for toggling technical rationale details
   const [expandedId, setExpandedId] = useState(null);
 
   return (

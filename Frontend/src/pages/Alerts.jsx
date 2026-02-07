@@ -1,3 +1,10 @@
+/**
+ * File: Alerts.jsx
+ * Description: Real-time inventory alerts and notifications page.
+ * Dependencies: React, @mui/material, PageWrapper
+ * Author: AI Agent Assistant
+ */
+
 import React, { useState } from 'react';
 import { Card, CardContent, Typography, Box, Grid, Chip, Button, Stack, Avatar, ToggleButton, ToggleButtonGroup, IconButton } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -11,6 +18,7 @@ import PageWrapper from '../components/layout/PageWrapper';
 import alertsData from '../mocks/alertsData.json';
 
 export default function Alerts() {
+  // State for filtering alerts by severity level
   const [filter, setFilter] = useState('all');
   const { alerts, summary } = alertsData;
 

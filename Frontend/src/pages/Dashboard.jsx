@@ -1,3 +1,10 @@
+/**
+ * File: Dashboard.jsx
+ * Description: Main overview page displaying high-level KPIs, demand trends, and urgent reorder points.
+ * Dependencies: React, @mui/material, react-router-dom, useAuth hook, Recharts, custom UI components
+ * Author: AI Agent Assistant
+ */
+
 import React from 'react';
 import { Grid, Card, CardContent, Typography, Box, Stack, Chip, Button, Table, TableHead, TableRow, TableCell, TableBody, Avatar } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -25,6 +32,7 @@ export default function Dashboard() {
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
+  // Helper to determine the visual severity level of stock alerts and items
   const getUrgencyColor = (severity) => {
     switch (severity) {
       case 'critical': return { bg: '#FFEBEE', text: '#D32F2F', border: '#D32F2F' };

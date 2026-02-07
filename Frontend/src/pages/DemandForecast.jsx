@@ -1,3 +1,10 @@
+/**
+ * File: DemandForecast.jsx
+ * Description: AI-driven visual demand forecasting for specific menu items.
+ * Dependencies: React, @mui/material, Recharts, PageWrapper
+ * Author: AI Agent Assistant
+ */
+
 import React, { useState } from 'react';
 import { Card, CardContent, Typography, Box, Grid, Chip, Autocomplete, TextField, ToggleButton, ToggleButtonGroup, Avatar, Stack } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -10,7 +17,10 @@ import DemandChart from '../components/charts/DemandChart';
 import mockForecast from '../mocks/forecastData.json';
 
 export default function DemandForecast() {
+  // Currently selected inventory item for detailed forecasting
   const [selectedItem, setSelectedItem] = useState(mockForecast.items[0]);
+
+  // Timeframe granularity (Daily, Weekly, Monthly)
   const [granularity, setGranularity] = useState('Daily');
 
   return (
