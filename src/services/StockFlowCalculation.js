@@ -16,8 +16,9 @@ class FreshFlowStockCalculator {
     // const response = await axios.post('http://ai-service/predict', { itemId, days });
     // return response.data.prediction;
 
-    // Returning dummy data for now to demonstrate the flow
-    return 70; // Example: 70 items predicted for 7 days
+    // Returning dummy data for now that scales with the requested days
+    // Assumption: Sales rate is approx 10 items/day
+    return 10 * days;
   }
 
   /**

@@ -22,6 +22,13 @@ const userSchema = mongoose.Schema({
     phone: {
         type: String,
         required: [true, "Please add a phone number"]
+    },
+    settings: {
+        demandWindow: {
+            type: Number,
+            default: 7, // Default to Weekly planning
+            enum: [1, 7, 30] // Restrict to Daily, Weekly, Monthly
+        }
     }
 }, {
     timestamps: true

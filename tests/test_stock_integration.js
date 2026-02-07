@@ -49,53 +49,61 @@ async function testWithRealData() {
         const userStock = await Stock.find({ user: testUserId });
         console.log(`Found ${userStock.length} stock entries for user.`);
 
-        // 4. Run Calculation
+        // 4. Run Calculation (TESTING BOTH 7 DAYS AND 1 DAY)
         const calculator = new FreshFlowStockCalculator();
-        const results = await calculator.calculateAllStockNeeds(allCatalogItems, userStock, 7);
 
-        // 5. Generate Alerts (NEW Step)
-        console.log("Generating Alerts...");
-        const alertGen = new AlertGenerator();
-        const alerts = alertGen.generateStockAlerts(results);
-        const summary = alertGen.getDashboardSummary(alerts);
+        console.log("\n--- RUNNING CALCULATION FOR 7 DAYS (WEEKLY) ---");
+        const resultsWeekly = await calculator.calculateAllStockNeeds(allCatalogItems, userStock, 7);
+        displayResults(resultsWeekly, userStock, "WEEKLY");
 
-        console.log("\n=== ALERTS DASHBOARD SUMMARY ===");
-        console.log(JSON.stringify(summary, null, 2));
-
-        // 6. Display Detailed Results
-        console.log("\n=== Calculation Results (First 5 Items + Alerts) ===");
-        results.slice(0, 5).forEach(r => {
-            const stockEntry = userStock.find(s =>
-                (s.item && s.item.toString() === r.menuItemId.toString())
-            );
-
-            console.log(`\nItem: ${r.menuItemId}`);
-            console.log(`Prediction: ${r.predictedDemand}`);
-            console.log(`Current Stock (DB): ${r.currentStock} (Raw quantity: ${stockEntry ? stockEntry.quantity : 'N/A'})`);
-            console.log(`Aim/Target: ${r.aimStockLevel}`);
-            console.log(`To Order: ${r.calculatedStock}`);
-
-            // Verification check logic
-            if (Math.max(0, r.aimStockLevel - r.currentStock) === r.calculatedStock) {
-                console.log("✅ Math Check Passed");
-            } else {
-                console.log("❌ Math Check Failed");
-            }
-
-            // Show Alert if exists
-            const itemAlert = alerts.find(a => a.menuItemId.toString() === r.menuItemId.toString());
-            if (itemAlert) {
-                console.log(`⚠️  ALERT [${itemAlert.severity}]: ${itemAlert.title} -> ${itemAlert.action}`);
-            } else {
-                console.log("🟢 Status: OK");
-            }
-        });
+        console.log("\n--- RUNNING CALCULATION FOR 1 DAY (DAILY) ---");
+        const resultsDaily = await calculator.calculateAllStockNeeds(allCatalogItems, userStock, 1);
+        displayResults(resultsDaily, userStock, "DAILY");
 
     } catch (error) {
         console.error("Error:", error);
     } finally {
         await mongoose.disconnect();
         console.log("\nDisconnected from MongoDB.");
+    }
+}
+
+function displayResults(results, userStock, label) {
+    // 5. Generate Alerts
+    const AlertGenerator = require('../src/services/AlertGenerator');
+    const alertGen = new AlertGenerator();
+    const alerts = alertGen.generateStockAlerts(results);
+    const summary = alertGen.getDashboardSummary(alerts);
+
+    console.log(`\n=== ALERTS DASHBOARD SUMMARY [${label}] ===`);
+    console.log(JSON.stringify(summary, null, 2));
+
+    // 6. Display Detailed Results (Filtered for meaningful item)
+    console.log(`\n=== Calculation Results (Active Item Only) [${label}] ===`);
+
+    // Filter to show only the item we know has stock (or specific ID)
+    const targetItem = results.find(r => r.menuItemId.toString() === "6984c05bb162ac961c44eafb");
+
+    if (targetItem) {
+        const r = targetItem;
+        const stockEntry = userStock.find(s =>
+            (s.item && s.item.toString() === r.menuItemId.toString())
+        );
+
+        console.log(`\nItem: ${r.menuItemId}`);
+        console.log(`Input Days: ${r.inputDays}`);
+        console.log(`Prediction: ${r.predictedDemand}`);
+        console.log(`Aim/Target: ${r.aimStockLevel} (Current: ${r.currentStock}) -> To Order: ${r.calculatedStock}`);
+
+        // Show Alert if exists
+        const itemAlert = alerts.find(a => a.menuItemId.toString() === r.menuItemId.toString());
+        if (itemAlert) {
+            console.log(`⚠️  ALERT [${itemAlert.severity}]: ${itemAlert.title} -> ${itemAlert.message}`);
+        } else {
+            console.log("🟢 Status: OK");
+        }
+    } else {
+        console.log("Target item not found in results.");
     }
 }
 
