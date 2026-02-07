@@ -190,10 +190,13 @@ const searchUsers = asyncHandler(async (req, res) => {
 // @route   PUT /api/users/settings
 // @access  Private
 const updateSettings = asyncHandler(async (req, res) => {
-    const { demandWindow } = req.body;
-
-    // Validate demandWindow (Basic validation: ensure it's a number and one of the allowed values if strict, but model enum handles that too)
-    // Model enum is strict, so mongoose will error if invalid.
+    const {
+        demandWindow,
+        leadTime,
+        safetyStockBuffer,
+        lowStockThreshold,
+        budgetLimit
+    } = req.body;
 
     const user = await User.findById(req.user.id);
 
@@ -202,11 +205,19 @@ const updateSettings = asyncHandler(async (req, res) => {
         throw new Error("User not found");
     }
 
-    if (demandWindow !== undefined) {
-        if (!user.settings) user.settings = {};
-        user.settings.demandWindow = demandWindow;
+    if (!user.settings) user.settings = {};
+
+    if (demandWindow !== undefined) user.settings.demandWindow = demandWindow;
+    if (leadTime !== undefined) user.settings.leadTime = leadTime;
+    if (safetyStockBuffer !== undefined) user.settings.safetyStockBuffer = safetyStockBuffer;
+    if (lowStockThreshold !== undefined) user.settings.lowStockThreshold = lowStockThreshold;
+    if (budgetLimit !== undefined) {
+        user.settings.budgetLimit = budgetLimit;
+        user.budget = budgetLimit; // Sync with top-level budget field
     }
 
+    // Explicitly mark modified if needed for nested updates
+    user.markModified('settings');
     const updatedUser = await user.save();
 
     res.status(200).json(updatedUser.settings);

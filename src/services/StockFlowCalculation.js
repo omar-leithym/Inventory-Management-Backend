@@ -76,9 +76,12 @@ class FreshFlowStockCalculator {
    * @param {Array} menuItems - List of items
    * @param {Array} currentInventory - List of stock entries
    * @param {number} days - Prediction horizon
+   * @param {number} leadTime - Custom lead time from settings
+   * @param {number} bufferPercentage - Custom safety stock buffer percentage (e.g., 20)
    */
-  async calculateAllStockNeeds(menuItems, currentInventory, days = 7) {
+  async calculateAllStockNeeds(menuItems, currentInventory, days = 7, leadTime = 2, bufferPercentage = 20) {
     const results = [];
+    const bufferMultiplier = 1 + (bufferPercentage / 100);
 
     for (const item of menuItems) {
       // Find current stock for this item
@@ -96,7 +99,9 @@ class FreshFlowStockCalculator {
         item.id,
         predictedDemand,
         currentStockLevel,
-        days
+        days,
+        leadTime,
+        bufferMultiplier
       );
 
       results.push(calculation);
