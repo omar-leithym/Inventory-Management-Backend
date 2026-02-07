@@ -1,92 +1,106 @@
 # Demand Forecast Model
 
-Modular, production-ready demand forecasting system.
+Modular, production-ready demand forecasting system using gradient boosting with 40+ engineered features.
 
-## 🚀 Features
+## Features
 
-- **XGBoost (Default)**, **LightGBM**, **Random Forest** model support
-- **Ensemble** mode available (averages predictions from all 3 models)
-- **Data Leakage Prevention**: Correctly handles historical data for place-level features
-- **Cold Start Handling**: Smart fallbacks for new items/places using global averages
-- **Multi-Period Support**: Daily, Weekly, and Monthly predictions with automatic scaling
-- **Input Validation**: Strict checks for data quality and business rules
+- **Multiple Models**: XGBoost (default), LightGBM, Random Forest, Ensemble
+- **40+ Features**: Temporal, lag, rolling statistics, place-level, item-level
+- **Cold Start Handling**: Smart fallbacks using global averages for new items/places
+- **Multi-Period Support**: Daily, weekly, monthly with native period aggregation
+- **Data Leakage Prevention**: Proper temporal handling for all features
+- **Input Validation**: Comprehensive data quality checks
 
-## 📦 Architecture
-
-The system is split into focused modules for maintainability:
-
-- `model.py`: **Main Orchestrator**. The single entry point.
-- `feature_engineering.py`: Feature creation, lag generation, window statistics.
-- `training.py`: Model training, hyperparameter management, cross-validation.
-- `prediction.py`: Inference logic, period scaling, ensemble aggregation.
-- `validation.py`: Data quality checks and schema enforcement.
-
-## 🛠️ Usage
-
-### Basic Usage
+## Quick Start
 
 ```python
 from src.models.demand_forecast import DemandForecastModel
 
-# 1. Initialize
+# Initialize
 model = DemandForecastModel(
-    model_type='xgboost',  # or 'ensemble', 'lightgbm', 'random_forest'
-    data_path='./data',
+    model_type='xgboost',  # 'xgboost', 'lightgbm', 'random_forest', 'ensemble'
+    data_path='./data/Inventory Management',
     period='daily'         # 'daily', 'weekly', 'monthly'
 )
 
-# 2. Train
-# Automatically loads data, creates demand dataset, engineers features, and trains
+# Train
 metrics = model.train_pipeline()
-print(f"MAE: {metrics['xgboost']['mae']}")
+print(f"MAE: {metrics['xgboost']['mae']:.2f}")
 
-# 3. Predict
+# Predict
 result = model.predict_demand(
     item_id=123,
     place_id=456,
     date='2024-03-01'
 )
-print(f"Predicted Demand: {result['predicted_demand']}")
-```
-
-### Advanced Usage (Custom Data)
-
-```python
-# Load your own dataframes
-orders, order_items, items, menu_items = load_custom_data()
-
-# Run pipeline with custom data
-model.train_pipeline(orders, order_items, items, menu_items)
-
-# Get feature importance
-importance_df = model.get_feature_importance()
-print(importance_df.head(10))
+print(f"Predicted: {result['predicted_demand']:.1f} units")
 
 # Save/Load
-model.save('models/my_model.pkl')
-loaded_model = DemandForecastModel()
-loaded_model.load('models/my_model.pkl')
+model.save('models/demand_forecast.pkl')
+model.load('models/demand_forecast.pkl')
 ```
 
-## Key Metrics
+## Module Structure
 
-For daily demand forecasting on the inventory dataset:
+| Module | Purpose |
+|--------|---------|
+| `model.py` | Main orchestrator - single entry point |
+| `feature_engineering.py` | 40+ features: temporal, lag, rolling, place, item |
+| `training.py` | Model training, hyperparameters, cross-validation |
+| `prediction.py` | Inference, ensemble, period scaling |
+| `validation.py` | Data quality checks, schema enforcement |
 
-| Model | MAE | R² | Use Case |
-|-------|-----|----|----------|
-| **XGBoost** | **2.60** | **0.684** | **Best All-Rounder** |
-| LightGBM | 2.64 | 0.648 | Fast Training |
-| Random Forest | 2.81 | 0.651 | Robust Baseline |
+## Feature Categories
 
+| Category | Examples |
+|----------|----------|
+| **Temporal** | day_of_week, is_weekend, month_sin/cos, quarter |
+| **Lag** | demand_lag_1, demand_lag_7, demand_same_dow |
+| **Rolling** | rolling_mean_7/14/30, rolling_std, EMA |
+| **Place** | place_total_demand, place_unique_items, item_share |
+| **Item** | base_price, menu_status, menu_purchases |
+
+## Performance
+
+| Model | MAE | R² | Best For |
+|-------|-----|-----|----------|
+| **XGBoost** | **2.60** | **0.684** | Production (best accuracy) |
+| LightGBM | 2.64 | 0.648 | Fast training |
+| Random Forest | 2.81 | 0.651 | Robust baseline |
+| Ensemble | ~2.55 | ~0.69 | Highest accuracy |
+
+## Period Handling
+
+The model uses **native period aggregation** during training:
+
+| Period | Training Data |
+|--------|--------------|
+| `daily` | Sum demand per day |
+| `weekly` | Sum demand per week |
+| `monthly` | Sum demand per month |
+
+## API Integration
+
+The model is exposed via Flask API on port 5001:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/demand/predict` | POST | Predict demand |
+| `/api/demand/train` | POST | Train model |
+| `/api/demand/info` | GET | Model status |
 
 ## Testing
 
-Run the included test scripts:
-
 ```bash
-# Full pipeline test with metrics
-python test_model.py
+# Run unit tests
+pytest src/models/demand_forecast/tests/
 
-# Train and save a production model
-python train_and_save.py
+# Full pipeline test
+python test_model.py
 ```
+
+## Detailed Documentation
+
+For comprehensive documentation, see:
+- [API Integration Guide](../../../docs/demand_forecast/demand_forecast_api_integration.md)
+- [Technical Architecture](../../../docs/demand_forecast/demand_forecast_architecture.md)
