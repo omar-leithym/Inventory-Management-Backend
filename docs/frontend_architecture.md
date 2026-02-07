@@ -119,3 +119,35 @@ const loadInventory = async () => {
     console.error("Critical: Failed to load inventory data", error);
   }
 };
+
+---
+
+## 🧠 Advanced Logic & Utilities
+
+### Custom React Hooks (`src/hooks/`)
+We use custom hooks to encapsulate complex state transitions and side effects:
+- **useAuth:** A concise wrapper around `AuthContext` to access user details and login status.
+- **useDashboard:** Orchestrates the fetching of all dashboard metrics (KPIs, charts, recent orders) and handles loading/error states for the main view.
+
+### Application Utilities (`src/utils/`)
+Consistency in data presentation is managed through centralized helper functions:
+- **formatters.js:** Contains logic for currency formatting (e.g., EGP/USD), date parsing, and decimal precision for growth percentages.
+- **constants.js:** Stores application-wide static data, such as API endpoint configurations, status code mappings, and chart color palettes.
+
+---
+
+## ⚡ Performance & Optimization
+
+- **Component Memoization:** Heavy charts and data tables use `React.memo` to prevent unnecessary re-renders during global state updates.
+- **Lazy Loading:** Routes are dynamically imported (where applicable) to reduce the initial bundle size.
+- **Efficient API Fetching:** Data is cached locally where possible to minimize redundant network requests.
+
+---
+
+## 🚀 Build & Deployment
+
+The application is optimized for production using **Vite**:
+
+1. **Production Build:**
+   ```bash
+   npm run build
