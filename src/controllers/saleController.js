@@ -6,11 +6,11 @@ const Stock = require("../models/stockModel");
 // @route   POST /api/sales
 // @access  Private
 const createSale = asyncHandler(async (req, res) => {
-    const { menuItemId, addonIds, quantity, price, discount } = req.body;
+    const { menuItemId, addonIds, quantity, pricePerUnit, discount } = req.body;
 
-    if (!menuItemId || !price) {
+    if (!menuItemId || !pricePerUnit) {
         res.status(400);
-        throw new Error('Please include menu item and price');
+        throw new Error('Please include menu item and price per unit');
     }
 
     const sale = await Sale.create({
@@ -18,7 +18,7 @@ const createSale = asyncHandler(async (req, res) => {
         menuItem: menuItemId,
         addons: addonIds || [],
         quantity: quantity || 1,
-        price,
+        pricePerUnit,
         discount: discount || 0
     });
 

@@ -197,6 +197,13 @@ const updateSettings = asyncHandler(async (req, res) => {
         lowStockThreshold,
         budgetLimit
     } = req.body;
+    const {
+        demandWindow,
+        leadTime,
+        safetyStockBuffer,
+        lowStockThreshold,
+        budgetLimit
+    } = req.body;
 
     const user = await User.findById(req.user.id);
 

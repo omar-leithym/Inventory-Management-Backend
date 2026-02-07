@@ -1,35 +1,66 @@
-<<<<<<< HEAD
+########################
+# Dependencies
+########################
 node_modules/
+.pnp
+.pnp.js
+
+########################
+# Environment variables
+########################
 .env
-.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Ignore data folder content but keep folder
-data/*
-!data/.gitkeep
-
+########################
 # Python
-__pycache__/
-*.py[cod]
-=======
-# Python
+########################
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+
+# Virtual environments
 venv/
 env/
 ENV/
+
+# Python packaging
 *.egg-info/
+
+########################
+# Build outputs
+########################
 dist/
 build/
 
-# Model files (large - consider Git LFS if needed)
-# Uncomment if you don't want to track model files
-# *.pkl
-# models/
+########################
+# Data folder (keep structure)
+########################
+data/*
+!data/.gitkeep
 
-# IDE
+########################
+# Logs
+########################
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+training*.log
+
+########################
+# Jupyter
+########################
+.ipynb_checkpoints
+*.ipynb
+
+########################
+# IDEs & Editors
+########################
 .vscode/
 .idea/
 *.swp
@@ -37,32 +68,16 @@ build/
 *.sublime-project
 *.sublime-workspace
 
-# OS
+########################
+# OS files
+########################
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Logs
-*.log
-*.txt.log
-training*.log
-
-# Jupyter Notebook
-.ipynb_checkpoints
-*.ipynb
-
-# Environment variables
-.env
-.env.local
-
-# Data (if large, consider git-lfs)
-# Uncomment if data files are too large
-# data/
-
+########################
 # Temporary files
+########################
 *.tmp
 *.bak
-*.swp
 *~
-
->>>>>>> c773487 (test: add verification scripts and update gitignore)

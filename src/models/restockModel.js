@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const saleSchema = mongoose.Schema({
+const restockSchema = mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
@@ -8,7 +8,6 @@ const saleSchema = mongoose.Schema({
     },
     menuItem: {
         type: Number,  // Custom integer ID instead of ObjectId
-        required: [true, "Please add a menu item"],
         ref: 'MenuItem'
     },
     addons: [{
@@ -22,14 +21,10 @@ const saleSchema = mongoose.Schema({
     pricePerUnit: {
         type: Number,
         required: [true, "Please add the price per unit"]
-    },
-    discount: {
-        type: Number,
-        default: 0
     }
 }, {
     timestamps: true
 });
 
-const Sale = mongoose.model('Sale', saleSchema);
-module.exports = Sale;
+const Restock = mongoose.model('Restock', restockSchema);
+module.exports = Restock;
