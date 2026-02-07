@@ -7,13 +7,14 @@ class AlertGenerator {
   /**
    * Generate alerts from stock calculation results
    * @param {Array} stockResults - Output from FreshFlowStockCalculator
+   * @param {number} lowStockThreshold - Custom percentage threshold for critically low stock
    * @returns {Array} List of alerts
    */
-  generateStockAlerts(stockResults) {
+  generateStockAlerts(stockResults, lowStockThreshold = 20) {
     const alerts = [];
 
     stockResults.forEach(item => {
-      const alert = this.evaluateItem(item);
+      const alert = this.evaluateItem(item, lowStockThreshold);
       if (alert) {
         alerts.push(alert);
       }
@@ -25,8 +26,9 @@ class AlertGenerator {
   /**
    * Evaluate a single item for alerts
    * @param {Object} itemResult - Single item result from calculator
+   * @param {number} lowStockThreshold - Custom percentage threshold
    */
-  evaluateItem(itemResult) {
+  evaluateItem(itemResult, lowStockThreshold) {
     const {
       menuItemId,
       currentStock,
@@ -55,8 +57,8 @@ class AlertGenerator {
       // Calculate how low we are (percentage of target)
       const stockHealth = (currentStock / aimStockLevel) * 100;
 
-      // If stock is critically low (< 20% of target) -> High Importance
-      if (stockHealth < 20) {
+      // If stock is critically low (below user threshold) -> High Importance
+      if (stockHealth < lowStockThreshold) {
         return {
           menuItemId,
           severity: 'CRITICAL',
