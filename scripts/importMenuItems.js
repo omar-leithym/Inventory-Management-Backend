@@ -88,10 +88,11 @@ const importData = async () => {
             const created = row[hIdx['created']];
 
             // Filter Logic: "if status indicates its inacive dont include it"
-            if (status === 'Inactive') {
-                skipped++;
-                continue;
-            }
+            // User requested to include all statuses (Active, Inactive, Out of stock)
+            // if (status === 'Inactive') {
+            //     skipped++;
+            //     continue;
+            // }
 
             // Deduplication Logic: Exact Match (Title + Type + Price)
             // Using a composite key
@@ -104,6 +105,7 @@ const importData = async () => {
             seenItems.add(uniqueKey);
 
             const item = {
+                _id: parseInt(row[hIdx['id']]),
                 title: title,
                 type: type || 'Normal',
                 price: parseFloat(price) || 0,

@@ -39,7 +39,6 @@ Calls the trained model + decision logic to return a recommended discount.
 #### Required JSON fields
 - `amount_left` *(number)* — current stock remaining
 - `expected_demand_for_remaining` *(number)* — expected demand in the remaining window at baseline
-- `place_id` *(integer)* — store / venue id
 - `item_id` *(integer)* — item id
 
 #### Optional JSON fields
@@ -49,6 +48,7 @@ Calls the trained model + decision logic to return a recommended discount.
 - `window_hours` *(number, default: 3.0)* — used if `window_end_ts_unix` not provided
 - `pct_grid` *(array[number], default shown below)* — list of discount pcts (0..1)
 - `baseline_pct` *(number, default: 0.0)*
+- `place_id` *(integer)* — store / venue id
 - `aggressiveness` *(number, default: 5.0)* — (0..10) tunes model-vs-rules weighting and coverage target
 - `return_debug` *(boolean, default: false)* — include debug table for all pct candidates
 - `debug_limit` *(integer, default: 200)* — max number of debug rows returned

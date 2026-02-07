@@ -95,10 +95,11 @@ const importData = async () => {
             }
 
             // If status is inactive, skip (Assuming 'Active' is valid, 'Inactive' is not)
-            if (status === 'Inactive') {
-                skipped++;
-                continue;
-            }
+            // User requested to include all statuses
+            // if (status === 'Inactive') {
+            //     skipped++;
+            //     continue;
+            // }
 
             // Deduplicate title
             if (seenTitles.has(title)) {
@@ -109,6 +110,7 @@ const importData = async () => {
             seenTitles.add(title);
 
             const addon = {
+                _id: parseInt(row[hIdx['id']]),
                 title: title,
                 price: parseFloat(price) || 0,
                 selectAsDefault: selectAsDefault === '1', // Assuming 1 is true

@@ -186,10 +186,61 @@ const searchUsers = asyncHandler(async (req, res) => {
     res.status(200).json(users);
 });
 
+// @desc    Update user settings (e.g., demand window)
+// @route   PUT /api/users/settings
+// @access  Private
+const updateSettings = asyncHandler(async (req, res) => {
+    const {
+        demandWindow,
+        leadTime,
+        safetyStockBuffer,
+        lowStockThreshold,
+        budgetLimit
+    } = req.body;
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+    }
+
+    if (!user.settings) user.settings = {};
+
+    if (demandWindow !== undefined) user.settings.demandWindow = demandWindow;
+    if (leadTime !== undefined) user.settings.leadTime = leadTime;
+    if (safetyStockBuffer !== undefined) user.settings.safetyStockBuffer = safetyStockBuffer;
+    if (lowStockThreshold !== undefined) user.settings.lowStockThreshold = lowStockThreshold;
+    if (budgetLimit !== undefined) {
+        user.settings.budgetLimit = budgetLimit;
+        user.budget = budgetLimit; // Keep top-level budget in sync if applicable
+    }
+
+    const updatedUser = await user.save();
+
+    res.status(200).json(updatedUser.settings);
+});
+
+// @desc    Get user settings
+// @route   GET /api/users/settings
+// @access  Private
+const getSettings = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+    }
+
+    res.status(200).json(user.settings || { demandWindow: 7 });
+});
+
 module.exports = {
     registerUser,
     loginUser,
     getUser,
     updateUser,
-    searchUsers
+    searchUsers,
+    updateSettings,
+    getSettings
 };

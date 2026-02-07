@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler");
+const mongoose = require("mongoose");
 const Stock = require("../models/stockModel");
 const MenuItem = require("../models/menuItemModel");
 const Addon = require("../models/addonModel");
@@ -137,30 +138,81 @@ const getStockRecommendations = asyncHandler(async (req, res) => {
     // 2. Fetch current user's stock
     const userStock = await Stock.find({ user: req.user.id });
 
+    // 2.2 Fetch User Settings
+    const user = await require("../models/userModel").findById(req.user.id);
+    const settings = user.settings || {};
+
+    // Configurable parameters with defaults
+    const demandDays = settings.demandWindow || 7;
+    const leadTime = settings.leadTime !== undefined ? settings.leadTime : 2;
+    const bufferPercentage = settings.safetyStockBuffer !== undefined ? settings.safetyStockBuffer : 20;
+    const lowStockThreshold = settings.lowStockThreshold !== undefined ? settings.lowStockThreshold : 20;
+
     // 3. Instantiate Calculator
     const FreshFlowStockCalculator = require('../services/StockFlowCalculation');
     const calculator = new FreshFlowStockCalculator();
 
     // 4. Calculate Needs
-    // Defaulting to 7 days as per user requirement standard
-    const recommendations = await calculator.calculateAllStockNeeds(allCatalogItems, userStock, 7);
+    // Use the user's preferred settings
+    const recommendations = await calculator.calculateAllStockNeeds(
+        allCatalogItems,
+        userStock,
+        demandDays,
+        leadTime,
+        bufferPercentage
+    );
 
     // 5. Generate Alerts
     const AlertGenerator = require('../services/AlertGenerator');
     const alertGen = new AlertGenerator();
-    const alerts = alertGen.generateStockAlerts(recommendations);
+    const alerts = alertGen.generateStockAlerts(recommendations, lowStockThreshold);
     const summary = alertGen.getDashboardSummary(alerts);
 
     res.status(200).json({
         recommendations,
         alerts,
-        summary
+        summary,
+        appliedSettings: {
+            demandDays,
+            leadTime,
+            bufferPercentage,
+            lowStockThreshold
+        }
     });
 });
+
+// @desc    Get stock item by ID
+// @route   GET /api/stock/:id
+// @access  Private
+const getStockById = asyncHandler(async (req, res) => {
+    const stock = await Stock.findById(req.params.id)
+        .populate('item');
+
+    if (!stock) {
+        res.status(404);
+        throw new Error('Stock item not found');
+    }
+
+    // Check for user
+    if (!req.user) {
+        res.status(401);
+        throw new Error('User not found');
+    }
+
+    // Make sure the logged in user matches the stock user
+    if (stock.user.toString() !== req.user.id) {
+        res.status(401);
+        throw new Error('User not authorized');
+    }
+
+    res.status(200).json(stock);
+});
+
 module.exports = {
     addStock,
     getStock,
     updateStock,
     deleteStock,
-    getStockRecommendations
+    getStockRecommendations,
+    getStockById
 };
