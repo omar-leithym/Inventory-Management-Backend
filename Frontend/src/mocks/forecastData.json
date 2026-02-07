@@ -1,0 +1,108 @@
+{
+  "lastTrained": "2 hours ago",
+  "modelName": "AI Forecast Model",
+  "avgDailyDemand": "15.3 units",
+  "peakDay": "Saturday",
+  "modelConfidence": "87%",
+  "selectedItem": "Tomatoes",
+  "granularity": "Daily",
+  "recommendedOrder": "80 units",
+  "forecastPeriod": "Daily",
+  "items": [
+    {
+      "id": 1,
+      "name": "Tomatoes"
+    },
+    {
+      "id": 2,
+      "name": "Mozzarella"
+    },
+    {
+      "id": 3,
+      "name": "Chicken Breast"
+    },
+    {
+      "id": 4,
+      "name": "Lettuce"
+    },
+    {
+      "id": 5,
+      "name": "Basil (fresh)"
+    }
+  ],
+  "chartData": [
+    {
+      "date": "Jan 25",
+      "actual": 12,
+      "predicted": 11
+    },
+    {
+      "date": "Jan 26",
+      "actual": 11,
+      "predicted": 12
+    },
+    {
+      "date": "Jan 27",
+      "actual": 14,
+      "predicted": 13
+    },
+    {
+      "date": "Jan 28",
+      "actual": 10,
+      "predicted": 14
+    },
+    {
+      "date": "Jan 29",
+      "actual": 13,
+      "predicted": 14
+    },
+    {
+      "date": "Jan 30",
+      "actual": 16,
+      "predicted": 15
+    },
+    {
+      "date": "Jan 31",
+      "actual": 17,
+      "predicted": 17
+    },
+    {
+      "date": "Feb 01",
+      "actual": 18,
+      "predicted": 18
+    },
+    {
+      "date": "Feb 02",
+      "actual": 19,
+      "predicted": 19
+    },
+    {
+      "date": "Feb 03",
+      "actual": 21,
+      "predicted": 20
+    },
+    {
+      "date": "Feb 04",
+      "actual": 18,
+      "predicted": 19
+    },
+    {
+      "date": "Feb 05",
+      "actual": null,
+      "predicted": 18,
+      "forecast": true
+    },
+    {
+      "date": "Feb 06",
+      "actual": null,
+      "predicted": 17,
+      "forecast": true
+    },
+    {
+      "date": "Feb 07",
+      "actual": null,
+      "predicted": 18,
+      "forecast": true
+    }
+  ]
+}
