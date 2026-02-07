@@ -145,7 +145,17 @@ const getStockRecommendations = asyncHandler(async (req, res) => {
     // Defaulting to 7 days as per user requirement standard
     const recommendations = await calculator.calculateAllStockNeeds(allCatalogItems, userStock, 7);
 
-    res.status(200).json(recommendations);
+    // 5. Generate Alerts
+    const AlertGenerator = require('../services/AlertGenerator');
+    const alertGen = new AlertGenerator();
+    const alerts = alertGen.generateStockAlerts(recommendations);
+    const summary = alertGen.getDashboardSummary(alerts);
+
+    res.status(200).json({
+        recommendations,
+        alerts,
+        summary
+    });
 });
 module.exports = {
     addStock,

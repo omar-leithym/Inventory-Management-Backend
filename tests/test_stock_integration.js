@@ -11,6 +11,7 @@ const MenuItem = require('../src/models/menuItemModel');
 const Addon = require('../src/models/addonModel');
 const Stock = require('../src/models/stockModel');
 const FreshFlowStockCalculator = require('../src/services/StockFlowCalculation');
+const AlertGenerator = require('../src/services/AlertGenerator');
 
 async function testWithRealData() {
     try {
@@ -52,8 +53,17 @@ async function testWithRealData() {
         const calculator = new FreshFlowStockCalculator();
         const results = await calculator.calculateAllStockNeeds(allCatalogItems, userStock, 7);
 
-        // 5. Display Results
-        console.log("\n=== Calculation Results (First 5 Items) ===");
+        // 5. Generate Alerts (NEW Step)
+        console.log("Generating Alerts...");
+        const alertGen = new AlertGenerator();
+        const alerts = alertGen.generateStockAlerts(results);
+        const summary = alertGen.getDashboardSummary(alerts);
+
+        console.log("\n=== ALERTS DASHBOARD SUMMARY ===");
+        console.log(JSON.stringify(summary, null, 2));
+
+        // 6. Display Detailed Results
+        console.log("\n=== Calculation Results (First 5 Items + Alerts) ===");
         results.slice(0, 5).forEach(r => {
             const stockEntry = userStock.find(s =>
                 (s.item && s.item.toString() === r.menuItemId.toString())
@@ -65,11 +75,19 @@ async function testWithRealData() {
             console.log(`Aim/Target: ${r.aimStockLevel}`);
             console.log(`To Order: ${r.calculatedStock}`);
 
-            // Verification check logic (optional, just logging for user to see)
+            // Verification check logic
             if (Math.max(0, r.aimStockLevel - r.currentStock) === r.calculatedStock) {
                 console.log("✅ Math Check Passed");
             } else {
                 console.log("❌ Math Check Failed");
+            }
+
+            // Show Alert if exists
+            const itemAlert = alerts.find(a => a.menuItemId.toString() === r.menuItemId.toString());
+            if (itemAlert) {
+                console.log(`⚠️  ALERT [${itemAlert.severity}]: ${itemAlert.title} -> ${itemAlert.action}`);
+            } else {
+                console.log("🟢 Status: OK");
             }
         });
 
