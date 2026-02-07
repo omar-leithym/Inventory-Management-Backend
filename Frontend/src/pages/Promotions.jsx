@@ -1,8 +1,8 @@
 /**
  * File: Promotions.jsx
- * Description: AI-powered promotion engine for clearing stock and maximizing margins.
- * Dependencies: React, @mui/material, PageWrapper
- * Author: AI Agent Assistant
+ * Description: Intelligent promotion generation based on demand and expiry.
+ * Dependencies: React, MUI, Promotion Data
+ * Author: Ahmed Abdeen
  */
 
 import React, { useState } from 'react';

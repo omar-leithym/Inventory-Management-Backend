@@ -1,8 +1,8 @@
 /**
  * File: Login.jsx
- * Description: User authentication page for secure access to the inventory platform.
- * Dependencies: React, @mui/material, react-router-dom, useAuth hook
- * Author: AI Agent Assistant
+ * Description: Secure authentication gateway for the inventory management system.
+ * Dependencies: React, MUI, Auth Service
+ * Author: Ahmed Abdeen
  */
 
 import React, { useState } from 'react';

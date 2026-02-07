@@ -1,8 +1,8 @@
 /**
  * File: DemandForecast.jsx
- * Description: AI-driven visual demand forecasting for specific menu items.
- * Dependencies: React, @mui/material, Recharts, PageWrapper
- * Author: AI Agent Assistant
+ * Description: Visual sales predictions and demand trends for inventory optimization.
+ * Dependencies: React, MUI, Recharts, Forecast Data
+ * Author: Ahmed Abdeen
  */
 
 import React, { useState } from 'react';

@@ -1,8 +1,8 @@
 /**
  * File: Alerts.jsx
- * Description: Real-time inventory alerts and notifications page.
- * Dependencies: React, @mui/material, PageWrapper
- * Author: AI Agent Assistant
+ * Description: Monitoring and management of real-time inventory alerts.
+ * Dependencies: React, MUI, Alert Data
+ * Author: Ahmed Abdeen
  */
 
 import React, { useState } from 'react';

@@ -1,8 +1,8 @@
 /**
  * File: Dashboard.jsx
- * Description: Main overview page displaying high-level KPIs, demand trends, and urgent reorder points.
- * Dependencies: React, @mui/material, react-router-dom, useAuth hook, Recharts, custom UI components
- * Author: AI Agent Assistant
+ * Description: Strategic overview of inventory KPIs, waste metrics, and reorder priorities.
+ * Dependencies: React, MUI, Recharts, Auth Hooks
+ * Author: Ahmed Abdeen
  */
 
 import React from 'react';
