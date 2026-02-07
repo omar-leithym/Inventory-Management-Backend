@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Forecast = require('../models/ForecastModel');
 const Sale = require('../models/saleModel');
 
@@ -82,10 +83,10 @@ class MAPECalculator {
 
         if (count === 0) return { mape: 0, count: 0 };
 
-        const mape = (totalErrorPercent / count) * 100;
+        // Return raw error ratio (e.g., 0.1 for 10%)
         return {
             itemId,
-            mape: parseFloat(mape.toFixed(2)), // e.g. 15.55 (%)
+            mape: parseFloat((totalErrorPercent / count).toFixed(4)),
             daysAnalyzed: count
         };
     }

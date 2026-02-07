@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-// Adjust path to .env if it is in src, based on file listing
-dotenv.config({ path: './src/.env' });
+const path = require('path');
+
+// Manually Load Env
+const envPath = path.resolve(__dirname, '..', 'src', '.env');
+console.log(`Loading .env from: ${envPath}`);
+dotenv.config({ path: envPath });
 
 const MenuItem = require('../src/models/menuItemModel');
 const Addon = require('../src/models/addonModel');

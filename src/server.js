@@ -18,6 +18,7 @@ app.use(cors());
 app.use("/api/users", userRoutes);
 app.use("/api/stock", require("./routes/stockRoutes"));
 app.use("/api/sales", require("./routes/saleRoutes"));
+app.use("/api/analytics", require("./routes/analyticsRoutes"));
 
 // Error Middleware
 app.use(errorHandler);
