@@ -1,13 +1,27 @@
 import React, { useState } from 'react';
-import { Grid, Card, CardContent, Typography, Box, TextField, Switch, FormControlLabel, Button, Avatar, Stack, Divider, InputAdornment } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
+import { Grid, Card, CardContent, Typography, Box, TextField, Switch, FormControlLabel, Button, Avatar, Stack, Divider, InputAdornment, MenuItem } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SaveIcon from '@mui/icons-material/Save';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import TuneIcon from '@mui/icons-material/Tune';
+import LogoutIcon from '@mui/icons-material/Logout';
 import PageWrapper from '../components/layout/PageWrapper';
+import userService from '../services/userService';
+import { Alert, Snackbar, CircularProgress } from '@mui/material';
+
 
 export default function Settings() {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/register');
+  };
+
   const [notifications, setNotifications] = useState({
     criticalAlerts: true,
     dailyDigest: true,
@@ -16,11 +30,58 @@ export default function Settings() {
   });
 
   const [params, setParams] = useState({
-    leadTime: 3,
-    safetyBuffer: 50,
+    leadTime: 2,
+    safetyStockBuffer: 20,
     lowStockThreshold: 20,
     budgetLimit: '',
+    demandWindow: 7,
   });
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  React.useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const data = await userService.getSettings();
+        if (data) {
+          setParams({
+            leadTime: data.leadTime ?? 2,
+            safetyStockBuffer: data.safetyStockBuffer ?? 20,
+            lowStockThreshold: data.lowStockThreshold ?? 20,
+            budgetLimit: data.budgetLimit ?? '',
+            demandWindow: data.demandWindow ?? 7,
+          });
+        }
+      } catch (err) {
+        setSnackbar({ open: true, message: 'Failed to load settings', severity: 'error' });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await userService.updateSettings({
+        ...params,
+        leadTime: Number(params.leadTime),
+        safetyStockBuffer: Number(params.safetyStockBuffer),
+        lowStockThreshold: Number(params.lowStockThreshold),
+        budgetLimit: params.budgetLimit === '' ? 0 : Number(params.budgetLimit),
+        demandWindow: Number(params.demandWindow),
+      });
+      setSnackbar({ open: true, message: 'Settings saved successfully', severity: 'success' });
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Failed to save settings', severity: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
 
   const handleNotificationChange = (key) => {
     setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
@@ -73,11 +134,13 @@ export default function Settings() {
                 mb: 2,
               }}
             >
-              D
+              {user?.firstName?.charAt(0).toUpperCase() || 'U'}
             </Avatar>
-            <Typography variant="h5" fontWeight={700}>Demo Manager</Typography>
+            <Typography variant="h5" fontWeight={700}>
+              {user?.firstName} {user?.lastName}
+            </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              demo@freshflow.dk
+              {user?.email}
             </Typography>
             <Box
               sx={{
@@ -91,7 +154,20 @@ export default function Settings() {
                 fontSize: 14,
               }}
             >
-              Manager
+              {user?.role || 'Owner'}
+            </Box>
+
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                startIcon={<LogoutIcon />}
+                onClick={handleLogout}
+                sx={{ px: 3, borderRadius: 2 }}
+              >
+                Sign Out
+              </Button>
             </Box>
 
             <Divider sx={{ my: 3 }} />
@@ -182,8 +258,8 @@ export default function Settings() {
                   fullWidth
                   label="Safety Stock Buffer"
                   type="number"
-                  value={params.safetyBuffer}
-                  onChange={(e) => handleParamChange('safetyBuffer', e.target.value)}
+                  value={params.safetyStockBuffer}
+                  onChange={(e) => handleParamChange('safetyStockBuffer', e.target.value)}
                   InputProps={{
                     endAdornment: <InputAdornment position="end">%</InputAdornment>,
                   }}
@@ -198,10 +274,11 @@ export default function Settings() {
                   value={params.lowStockThreshold}
                   onChange={(e) => handleParamChange('lowStockThreshold', e.target.value)}
                   InputProps={{
-                    endAdornment: <InputAdornment position="end">units</InputAdornment>,
+                    endAdornment: <InputAdornment position="end">%</InputAdornment>,
                   }}
-                  helperText="Alert when any item drops below this count."
+                  helperText="Alert when any item inventory health drops below this %."
                 />
+
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -217,21 +294,49 @@ export default function Settings() {
                   helperText="Prioritise reorders within this budget."
                 />
               </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Default Prediction Time"
+                  value={params.demandWindow}
+                  onChange={(e) => handleParamChange('demandWindow', e.target.value)}
+                  helperText="Time period for forecasting."
+                >
+                  <MenuItem value={1}>Daily</MenuItem>
+                  <MenuItem value={7}>Weekly</MenuItem>
+                  <MenuItem value={30}>Monthly</MenuItem>
+                </TextField>
+              </Grid>
             </Grid>
 
             <Box sx={{ mt: 4, textAlign: 'right' }}>
               <Button
                 variant="contained"
-                startIcon={<SaveIcon />}
+                startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                 size="large"
                 sx={{ px: 4 }}
+                onClick={handleSave}
+                disabled={saving || loading}
               >
-                Save Settings
+                {saving ? 'Saving...' : 'Save Settings'}
               </Button>
             </Box>
           </CardContent>
         </Card>
       </Box>
-    </PageWrapper>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
+    </PageWrapper >
   );
 }
