@@ -20,8 +20,8 @@ from typing import Any, Dict, Optional
 import pandas as pd
 from flask import Flask, jsonify, request
 
-from src.services.model_io import load_artifacts  # loads .txt + .meta.json and returns align()
-from src.services.decision import recommend_discount_item  # main inference/decision logic
+from src.services.prediction_model.model_io import load_artifacts  # loads .txt + .meta.json and returns align()
+from src.services.prediction_model.decision import recommend_discount_item  # main inference/decision logic
 
 from pathlib import Path
 
